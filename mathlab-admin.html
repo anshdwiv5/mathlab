@@ -159,6 +159,18 @@ tr:hover td{background:var(--bg-in)}
 .stat-mini .val{font-family:var(--ff-d);font-size:26px;color:var(--primary)}
 .stat-mini .sub{font-size:12px;color:var(--text-2);margin-top:2px}
 
+/* Toast notification */
+.toast-wrap{position:fixed;top:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.toast{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;box-shadow:var(--sh-lg);display:flex;align-items:flex-start;gap:12px;min-width:280px;max-width:360px;pointer-events:all;animation:slideIn .3s ease forwards}
+.toast-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.toast-body strong{display:block;font-size:14px;margin-bottom:2px}
+.toast-body p{font-size:13px;color:var(--text-2)}
+.toast-close{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-3);font-size:16px;flex-shrink:0;padding:0}
+.toast-close:hover{color:var(--text)}
+.toast.new-request{border-left:3px solid var(--accent)}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(20px)}}
+
 /* Back btn */
 .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-2);cursor:pointer;margin-bottom:20px;transition:color var(--t);background:none;border:none;font-family:var(--ff-b)}
 .back-btn:hover{color:var(--primary)}
@@ -246,7 +258,11 @@ function rLogin(){
 function doAdmLogin(){
   const u=$('lu').value.trim(), p=$('lp').value;
   const creds = getAdmCreds();
-  if(u===creds.username && p===creds.password){ S.loggedIn=true; S.error=''; render(); }
+  if(u===creds.username && p===creds.password){
+    S.loggedIn=true; S.error='';
+    lastKnownPendingCount = getUsers().filter(u=>u.status==='pending').length;
+    render();
+  }
   else { S.error='Invalid credentials.'; render(); }
 }
 
@@ -288,6 +304,7 @@ function rAdmin(){
   ${S.classModal ? rClassModal() : ''}
   ${S.noteModal ? rNoteModal() : ''}
   ${S.settingsModal ? rSettingsModal() : ''}
+  <div class="toast-wrap" id="toast-wrap"></div>
   </div>`;
 }
 
@@ -688,6 +705,59 @@ function editTotalClasses(uid){
 function setSection(s){ S.section=s; S.studentId=null; S.info=''; render(); }
 function closeModals(){ S.approveModal=null; S.classModal=null; S.noteModal=null; S.settingsModal=false; S.error=''; S.info=''; render(); }
 function doLogout(){ S.loggedIn=false; render(); }
+
+// ── TOAST ─────────────────────────────────────────────────────────────
+function showToast(icon, title, body, type='') {
+  const wrap = document.getElementById('toast-wrap');
+  if (!wrap) return;
+  const id = 'toast-' + Date.now();
+  const el = document.createElement('div');
+  el.className = `toast ${type}`; el.id = id;
+  el.innerHTML = `<div class="toast-icon">${icon}</div>
+    <div class="toast-body"><strong>${title}</strong><p>${body}</p></div>
+    <button class="toast-close" onclick="dismissToast('${id}')">✕</button>`;
+  wrap.appendChild(el);
+  setTimeout(() => dismissToast(id), 6000);
+}
+
+function dismissToast(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.animation = 'slideOut .3s ease forwards';
+  setTimeout(() => el.remove(), 300);
+}
+
+// ── AUTO-REFRESH (localStorage polling) ──────────────────────────────
+let lastKnownPendingCount = 0;
+
+function checkForNewRequests() {
+  if (!S.loggedIn) return;
+  const pending = getUsers().filter(u => u.status === 'pending');
+  if (pending.length > lastKnownPendingCount) {
+    const newest = pending[pending.length - 1];
+    showToast('🔔', 'New Sign-up Request!', `${newest.name} signed up for ${newest.studentName}`, 'new-request');
+    // Auto-switch to pending tab if not in a student detail
+    if (!S.studentId && !S.approveModal && !S.classModal && !S.noteModal) {
+      S.section = 'pending';
+      render();
+    } else {
+      // Just refresh the sidebar badge
+      const badge = document.querySelector('.nav-badge');
+      if (badge) badge.textContent = pending.length;
+    }
+  }
+  lastKnownPendingCount = pending.length;
+}
+
+// Listen for localStorage changes from the parents app (same domain)
+window.addEventListener('storage', (e) => {
+  if (e.key === 'ml_users' && S.loggedIn) {
+    checkForNewRequests();
+  }
+});
+
+// Also poll every 10 seconds as fallback (same tab won't fire storage events)
+setInterval(() => { if (S.loggedIn) checkForNewRequests(); }, 10000);
 
 // Init
 render();
