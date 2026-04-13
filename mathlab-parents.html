@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Math Lab — Parent Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -67,8 +68,8 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:1
 .lnk{background:none;border:none;color:var(--primary);font-family:var(--ff-b);font-size:14px;font-weight:500;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
 .auth-footer{margin-top:18px;text-align:center;font-size:14px;color:var(--text-2)}
 
-/* OTP mock notice */
-.otp-notice{background:var(--accent-lt);border:1px solid var(--accent);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;color:var(--accent);margin-bottom:16px;text-align:center;line-height:1.5}
+/* OTP notice */
+.otp-notice{background:var(--primary-lt);border:1px solid var(--primary);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;color:var(--primary);margin-bottom:16px;text-align:center;line-height:1.5}
 
 /* Alerts */
 .err{background:#FEE2E2;color:#DC2626;border-radius:var(--r-sm);padding:10px 14px;font-size:13px;margin-bottom:15px}
@@ -250,6 +251,9 @@ function doLogin() {
   u.status==='approved' ? nav('home') : nav('pending');
 }
 
+// ── EMAILJS INIT ──────────────────────────────────────────────────────
+emailjs.init('fzItBxRq2t5IcS_hg');
+
 // ── SIGNUP 1 ──────────────────────────────────────────────────────────
 function rSignup1() {
   const d = S.signupData;
@@ -260,44 +264,80 @@ function rSignup1() {
     <h2>Create account</h2><p class="subtitle">Step 1 of 3 — Your details</p>
     ${S.error?`<div class="err">${S.error}</div>`:''}
     <div class="fg"><label>Parent Name *</label><input id="s1n" type="text" placeholder="Your full name" value="${d.name||''}" /></div>
+    <div class="fg"><label>Email Address *</label><input id="s1em" type="email" placeholder="your@email.com" value="${d.email||''}" /></div>
     <div class="fg"><label>Phone Number *</label><input id="s1ph" type="tel" placeholder="+91 9876543210" value="${d.phone||''}" /></div>
     <div class="fg"><label>Student's Name *</label><input id="s1st" type="text" placeholder="Your child's name" value="${d.studentName||''}" /></div>
-    <button class="btn btn-p" onclick="doSignup1()" style="margin-top:6px">Send OTP →</button>
+    <button class="btn btn-p" id="s1btn" onclick="doSignup1()" style="margin-top:6px">Send OTP to Email →</button>
     <div class="auth-footer">Already registered? <button class="lnk" onclick="nav('login')">Sign in</button></div>
   </div></div>`;
 }
 
-function doSignup1() {
-  const name=$('s1n').value.trim(), phone=$('s1ph').value.trim(), studentName=$('s1st').value.trim();
-  if (!name||!phone||!studentName) { S.error='All fields are required.'; render(); return; }
+async function doSignup1() {
+  const name=$('s1n').value.trim(), email=$('s1em').value.trim();
+  const phone=$('s1ph').value.trim(), studentName=$('s1st').value.trim();
+  if (!name||!email||!phone||!studentName) { S.error='All fields are required.'; render(); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { S.error='Please enter a valid email address.'; render(); return; }
   if (phone.replace(/\D/g,'').length < 10) { S.error='Please enter a valid phone number.'; render(); return; }
   if (getUsers().find(u => u.name.toLowerCase()===name.toLowerCase())) {
     S.error='This name is already registered. Please sign in.'; render(); return;
   }
+  const btn=$('s1btn'); btn.textContent='Sending OTP…'; btn.disabled=true;
   const otp = Math.floor(100000+Math.random()*900000).toString();
-  nav('signup2', { signupData:{name,phone,studentName}, mockOtp:otp });
+  try {
+    await emailjs.send('service_1x75rs9', 'template_6o9nzkj', {
+      to_name: name,
+      to_email: email,
+      otp: otp
+    });
+    nav('signup2', { signupData:{name,email,phone,studentName}, mockOtp:otp });
+  } catch(e) {
+    S.error='Failed to send OTP. Please check your email and try again.';
+    render();
+  }
 }
 
 // ── SIGNUP 2 (OTP) ────────────────────────────────────────────────────
 function rSignup2() {
+  const maskedEmail = S.signupData.email.replace(/(.{2})(.*)(@.*)/, (_, a, b, c) => a + '*'.repeat(b.length) + c);
   return `<div class="auth-screen fade-in">
   <div class="auth-logo"><div class="logo-icon">∑</div><h1>Math Lab</h1><p>Parent Portal</p></div>
   <div class="auth-card">
     <div class="steps"><div class="step done"></div><div class="step active"></div><div class="step"></div></div>
-    <h2>Verify phone</h2><p class="subtitle">Step 2 of 3 — OTP</p>
+    <h2>Verify email</h2><p class="subtitle">Step 2 of 3 — Check your inbox</p>
     ${S.error?`<div class="err">${S.error}</div>`:''}
-    <div class="otp-notice">🧪 <strong>Testing mode</strong> — OTP is <strong>${S.mockOtp}</strong><br><small>Twilio integration pending</small></div>
-    <div class="fg"><label>Enter OTP sent to ${S.signupData.phone}</label>
+    <div class="otp-notice">📧 OTP sent to <strong>${maskedEmail}</strong><br><small>Check your inbox (and spam folder)</small></div>
+    <div class="fg"><label>Enter 6-digit OTP</label>
     <input id="s2otp" class="otp-in" type="text" placeholder="______" maxlength="6" onkeydown="if(event.key==='Enter')doSignup2()" /></div>
     <button class="btn btn-p" onclick="doSignup2()">Verify →</button>
-    <div class="auth-footer"><button class="lnk" onclick="nav('signup1',{signupData:S.signupData})">← Change details</button></div>
+    <div class="auth-footer">
+      <button class="lnk" onclick="nav('signup1',{signupData:S.signupData})">← Change details</button>
+      &nbsp;·&nbsp;
+      <button class="lnk" onclick="resendOtp()">Resend OTP</button>
+    </div>
   </div></div>`;
 }
 
 function doSignup2() {
   const otp=$('s2otp').value.trim();
+  if (otp.length!==6) { S.error='Please enter the 6-digit OTP.'; render(); return; }
   if (otp!==S.mockOtp) { S.error='Incorrect OTP. Please try again.'; render(); return; }
   nav('signup3', { signupData:S.signupData });
+}
+
+async function resendOtp() {
+  const otp = Math.floor(100000+Math.random()*900000).toString();
+  try {
+    await emailjs.send('service_1x75rs9', 'template_6o9nzkj', {
+      to_name: S.signupData.name,
+      to_email: S.signupData.email,
+      otp: otp
+    });
+    S.mockOtp = otp;
+    S.info = 'OTP resent! Check your inbox.'; S.error='';
+    render();
+  } catch(e) {
+    S.error='Failed to resend OTP. Please try again.'; render();
+  }
 }
 
 // ── SIGNUP 3 (PASSWORD) ───────────────────────────────────────────────
@@ -324,6 +364,7 @@ async function doSignup3() {
   const user = {
     id: Date.now().toString(),
     name: S.signupData.name, phone: S.signupData.phone,
+    email: S.signupData.email,
     studentName: S.signupData.studentName, password: pw,
     status: 'pending', totalClassesMonth: 0,
     syllabusSchedule: [], syllabusTopics: [],
@@ -341,7 +382,7 @@ async function sendGmailNotif(user) {
       method:"POST", headers:{"Content-Type":"application/json"},
       body: JSON.stringify({
         model:"claude-sonnet-4-20250514", max_tokens:1000,
-        messages:[{role:"user", content:`Send an email using Gmail to anshdwiv5@gmail.com with subject "New Math Lab Sign-up: ${user.studentName} (${user.name})" and this body:\n\nHi Ansh,\n\nA new parent has registered on Math Lab:\n\nParent Name: ${user.name}\nStudent Name: ${user.studentName}\nPhone: ${user.phone}\nTime: ${new Date().toLocaleString('en-IN')}\n\nPlease open your admin panel to approve or reject this request.\n\n— Math Lab System`}],
+        messages:[{role:"user", content:`Send an email using Gmail to anshdwiv5@gmail.com with subject "New Math Lab Sign-up: ${user.studentName} (${user.name})" and this body:\n\nHi Ansh,\n\nA new parent has registered on Math Lab:\n\nParent Name: ${user.name}\nStudent Name: ${user.studentName}\nPhone: ${user.phone}\nEmail: ${user.email||'—'}\nTime: ${new Date().toLocaleString('en-IN')}\n\nPlease open your admin panel to approve or reject this request.\n\n— Math Lab System`}],
         mcp_servers:[{type:"url",url:"https://gmail.mcp.claude.com/mcp",name:"gmail"}]
       })
     });
