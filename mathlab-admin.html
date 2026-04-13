@@ -302,6 +302,8 @@ function rAdmin(){
   <!-- MODALS -->
   ${S.approveModal ? rApproveModal() : ''}
   ${S.classModal ? rClassModal() : ''}
+  ${S.editClassId ? rEditClassModal() : ''}
+  ${S.editSchedUid ? rEditSchedModal() : ''}
   ${S.noteModal ? rNoteModal() : ''}
   ${S.settingsModal ? rSettingsModal() : ''}
   <div class="toast-wrap" id="toast-wrap"></div>
@@ -508,6 +510,25 @@ function rStudentDetail(){
     <div class="stat-mini"><div class="lbl">Total classes/mo</div><div class="val" style="font-size:20px">${u.totalClassesMonth}</div><div class="sub" style="cursor:pointer;color:var(--primary);text-decoration:underline" onclick="editTotalClasses('${u.id}')">Edit</div></div>
   </div>
 
+  <!-- Parent Credentials -->
+  <div class="card" style="margin-bottom:24px;border-left:3px solid var(--accent)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <strong style="font-size:14px">🔐 Parent Credentials</strong>
+      <span style="font-size:11px;color:var(--text-3)">Admin only</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+      <div><div style="color:var(--text-3);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Login Name</div><div style="font-weight:600">${u.name}</div></div>
+      <div><div style="color:var(--text-3);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Email</div><div style="font-weight:600">${u.email||'—'}</div></div>
+      <div><div style="color:var(--text-3);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Phone</div><div style="font-weight:600">${u.phone}</div></div>
+      <div><div style="color:var(--text-3);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Password</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span id="pw-reveal" style="font-weight:600;font-family:monospace;letter-spacing:.05em">••••••••</span>
+          <button onclick="togglePwReveal('${u.password}')" style="background:none;border:none;cursor:pointer;color:var(--primary);font-size:12px;font-family:var(--ff-b);font-weight:600;padding:0">Show</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Current Note -->
   ${note?`<div class="card" style="margin-bottom:24px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -522,7 +543,7 @@ function rStudentDetail(){
   <p class="section-title">Classes Log</p>
   ${cls.length===0?`<div class="empty" style="padding:32px 24px"><div class="ei">📚</div><p>No classes logged yet.</p></div>`
   :`<div class="tbl-wrap"><table>
-    <thead><tr><th>Date</th><th>Topic Covered</th><th>Homework Assigned</th><th>HW Done?</th><th>Action</th></tr></thead>
+    <thead><tr><th>Date</th><th>Topic Covered</th><th>Homework Assigned</th><th>HW Done?</th><th>Actions</th></tr></thead>
     <tbody>${cls.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(c=>`<tr>
       <td style="white-space:nowrap">${fmtDate(c.date)}</td>
       <td>${c.topic}</td>
@@ -532,12 +553,18 @@ function rStudentDetail(){
           ${c.hwDone?'✓ Done':'⏳ Pending'}
         </button>
       </td>
-      <td><button class="btn btn-red btn-sm" onclick="delClass('${c.id}')">Delete</button></td>
+      <td><div class="td-actions">
+        <button class="btn btn-gh btn-sm" onclick="openEditClassModal('${c.id}')">✏️ Edit</button>
+        <button class="btn btn-red btn-sm" onclick="delClass('${c.id}')">Delete</button>
+      </div></td>
     </tr>`).join('')}</tbody>
   </table></div>`}
 
   <!-- Syllabus Schedule -->
-  <p class="section-title">Syllabus Schedule</p>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:28px;margin-bottom:14px">
+    <p class="section-title" style="margin:0">Syllabus Schedule</p>
+    <button class="btn btn-gh btn-sm" onclick="openEditSchedModal('${u.id}')">✏️ Edit Schedule</button>
+  </div>
   ${(u.syllabusSchedule&&u.syllabusSchedule.length>0)?`
   <div class="tbl-wrap"><table>
     <thead><tr><th>Month</th><th>Week</th><th>Topic</th><th>Type</th></tr></thead>
@@ -545,10 +572,10 @@ function rStudentDetail(){
       <td>${s.month}</td><td>Week ${s.week}</td><td>${s.topic}</td>
       <td><span class="badge bdg-y">${s.type}</span></td>
     </tr>`).join('')}</tbody>
-  </table></div>`:`<div class="empty" style="padding:24px"><div class="ei">🗓</div><p>No schedule set.</p></div>`}
+  </table></div>`:`<div class="empty" style="padding:24px"><div class="ei">🗓</div><p>No schedule set. <button class="lnk" onclick="openEditSchedModal('${u.id}')">Add now →</button></p></div>`}
 
   <!-- Topics Progress -->
-  <p class="section-title">Topics Progress</p>
+  <p class="section-title" style="margin-top:28px">Topics Progress</p>
   ${(u.syllabusTopics&&u.syllabusTopics.length>0)?`
   <div class="tbl-wrap"><table>
     <thead><tr><th>Topic</th><th>Status</th></tr></thead>
@@ -566,7 +593,110 @@ function rStudentDetail(){
   </div>`;
 }
 
-// ── TOPIC STATUS ──────────────────────────────────────────────────────
+// ── EDIT CLASS MODAL ──────────────────────────────────────────────────
+function openEditClassModal(classId){
+  S.editClassId = classId; S.classModal = null; render();
+}
+
+function rEditClassModal(){
+  const c = getAllClasses().find(x=>x.id===S.editClassId); if(!c) return '';
+  return `<div class="modal-overlay" onclick="if(event.target===this)closeModals()">
+  <div class="modal">
+    <h3>Edit Class Entry</h3>
+    <p class="modal-sub">${fmtDate(c.date)}</p>
+    ${S.error?`<div class="err">${S.error}</div>`:''}
+    <div class="fg"><label>Date *</label><input id="ec-date" type="date" value="${c.date}" /></div>
+    <div class="fg"><label>Topic Covered *</label><input id="ec-topic" type="text" value="${c.topic}" /></div>
+    <div class="fg"><label>Homework Assigned</label><input id="ec-hw" type="text" value="${c.homework||''}" /></div>
+    <div class="fg" style="display:flex;align-items:center;gap:12px">
+      <input id="ec-done" type="checkbox" style="width:18px;height:18px;cursor:pointer;accent-color:var(--primary)" ${c.hwDone?'checked':''}/>
+      <label for="ec-done" style="font-size:14px;color:var(--text);cursor:pointer;text-transform:none;letter-spacing:0">Homework done</label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gh" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-p" onclick="doEditClass()">Save Changes</button>
+    </div>
+  </div></div>`;
+}
+
+function doEditClass(){
+  const date=$('ec-date').value, topic=$('ec-topic').value.trim();
+  if(!date||!topic){S.error='Date and topic are required.';render();return;}
+  const all=getAllClasses(), idx=all.findIndex(c=>c.id===S.editClassId);
+  all[idx]={...all[idx], date, topic, homework:$('ec-hw').value.trim(), hwDone:$('ec-done').checked};
+  saveClasses(all); closeModals(); S.info='Class updated!'; render();
+}
+
+// ── EDIT SCHEDULE MODAL ───────────────────────────────────────────────
+function openEditSchedModal(uid){
+  const u=getUsers().find(x=>x.id===uid);
+  S.editSchedUid=uid;
+  S.editSchedRows=(u.syllabusSchedule&&u.syllabusSchedule.length>0)
+    ?JSON.parse(JSON.stringify(u.syllabusSchedule))
+    :[{month:'',week:'1',topic:'',type:'New'}];
+  render();
+}
+
+function rEditSchedModal(){
+  const u=getUsers().find(x=>x.id===S.editSchedUid); if(!u) return '';
+  return `<div class="modal-overlay" onclick="if(event.target===this)closeModals()">
+  <div class="modal" style="max-width:640px">
+    <h3>Edit Syllabus Schedule</h3>
+    <p class="modal-sub">For <strong>${u.studentName}</strong></p>
+    ${S.error?`<div class="err">${S.error}</div>`:''}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <label style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em">Schedule Rows</label>
+      <button class="btn btn-gh btn-sm" onclick="addEditSchedRow()">+ Add Row</button>
+    </div>
+    <div class="rows-builder">
+      <div class="row-hd"><span>Month</span><span>Week</span><span>Topic</span><span>Type</span><span></span></div>
+      <div id="edit-sched-rows">${S.editSchedRows.map((r,i)=>editSchedRowHTML(r,i)).join('')}</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-gh" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-p" onclick="doSaveSched()">Save Schedule</button>
+    </div>
+  </div></div>`;
+}
+
+function editSchedRowHTML(r,i){
+  return `<div class="rb-row">
+    <input placeholder="Apr 2025" value="${r.month||''}" oninput="S.editSchedRows[${i}].month=this.value" />
+    <input type="number" placeholder="1" min="1" max="4" value="${r.week||''}" oninput="S.editSchedRows[${i}].week=this.value" />
+    <input placeholder="Topic" value="${r.topic||''}" oninput="S.editSchedRows[${i}].topic=this.value" />
+    <select onchange="S.editSchedRows[${i}].type=this.value">
+      ${['New','Revision','Test','Mixed'].map(t=>`<option ${r.type===t?'selected':''}>${t}</option>`).join('')}
+    </select>
+    <button class="rb-del" onclick="S.editSchedRows.splice(${i},1);reRenderSchedRows()">✕</button>
+  </div>`;
+}
+
+function addEditSchedRow(){
+  S.editSchedRows.push({month:'',week:'1',topic:'',type:'New'});
+  reRenderSchedRows();
+}
+
+function reRenderSchedRows(){
+  const el=$('edit-sched-rows');
+  if(el) el.innerHTML=S.editSchedRows.map((r,i)=>editSchedRowHTML(r,i)).join('');
+}
+
+function doSaveSched(){
+  const rows=S.editSchedRows.filter(r=>r.month&&r.topic);
+  const users=getUsers(), idx=users.findIndex(u=>u.id===S.editSchedUid);
+  users[idx].syllabusSchedule=rows; saveUsers(users);
+  closeModals(); S.info='Syllabus schedule updated!'; render();
+}
+
+// ── PASSWORD REVEAL ────────────────────────────────────────────────────
+let pwRevealed = false;
+function togglePwReveal(pw){
+  const el=$('pw-reveal'), btn=el&&el.nextElementSibling;
+  if(!el) return;
+  pwRevealed=!pwRevealed;
+  el.textContent=pwRevealed?pw:'••••••••';
+  if(btn) btn.textContent=pwRevealed?'Hide':'Show';
+}
 function setTopicStatus(uid, idx, status){
   const users=getUsers(), uidx=users.findIndex(u=>u.id===uid);
   users[uidx].syllabusTopics[idx].status=status;
@@ -703,7 +833,7 @@ function editTotalClasses(uid){
 
 // ── MISC ─────────────────────────────────────────────────────────────
 function setSection(s){ S.section=s; S.studentId=null; S.info=''; render(); }
-function closeModals(){ S.approveModal=null; S.classModal=null; S.noteModal=null; S.settingsModal=false; S.error=''; S.info=''; render(); }
+function closeModals(){ S.approveModal=null; S.classModal=null; S.editClassId=null; S.editSchedUid=null; S.noteModal=null; S.settingsModal=false; S.error=''; S.info=''; render(); }
 function doLogout(){ S.loggedIn=false; render(); }
 
 // ── TOAST ─────────────────────────────────────────────────────────────
