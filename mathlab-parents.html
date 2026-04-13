@@ -378,15 +378,14 @@ async function doSignup3() {
 
 async function sendGmailNotif(user) {
   try {
-    await fetch("https://api.anthropic.com/v1/messages", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({
-        model:"claude-sonnet-4-20250514", max_tokens:1000,
-        messages:[{role:"user", content:`Send an email using Gmail to anshdwiv5@gmail.com with subject "New Math Lab Sign-up: ${user.studentName} (${user.name})" and this body:\n\nHi Ansh,\n\nA new parent has registered on Math Lab:\n\nParent Name: ${user.name}\nStudent Name: ${user.studentName}\nPhone: ${user.phone}\nEmail: ${user.email||'—'}\nTime: ${new Date().toLocaleString('en-IN')}\n\nPlease open your admin panel to approve or reject this request.\n\n— Math Lab System`}],
-        mcp_servers:[{type:"url",url:"https://gmail.mcp.claude.com/mcp",name:"gmail"}]
-      })
+    await emailjs.send('service_1x75rs9', 'template_8imnvrh', {
+      parent_name: user.name,
+      student_name: user.studentName,
+      phone: user.phone,
+      parent_email: user.email || '—',
+      signup_time: new Date().toLocaleString('en-IN')
     });
-  } catch(e) { console.warn('Gmail notification failed:', e); }
+  } catch(e) { console.warn('Admin notification failed:', e); }
 }
 
 // ── PENDING ───────────────────────────────────────────────────────────
