@@ -284,14 +284,16 @@ async function doSignup1() {
   const btn=$('s1btn'); btn.textContent='Sending OTP…'; btn.disabled=true;
   const otp = Math.floor(100000+Math.random()*900000).toString();
   try {
-    await emailjs.send('service_1x75rs9', 'template_6o9nzkj', {
+    const result = await emailjs.send('service_1x75rs9', 'template_6o9nzkj', {
       to_name: name,
       to_email: email,
       otp: otp
     });
+    console.log('EmailJS success:', result);
     nav('signup2', { signupData:{name,email,phone,studentName}, mockOtp:otp });
   } catch(e) {
-    S.error='Failed to send OTP. Please check your email and try again.';
+    console.error('EmailJS error:', e);
+    S.error = `OTP failed (${e.text || e.message || JSON.stringify(e)}). Please try again.`;
     render();
   }
 }
