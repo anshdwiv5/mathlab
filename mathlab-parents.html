@@ -43,7 +43,7 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:1
 .loading-screen{min-height:100dvh;min-height:100svh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
 .spinner{width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.auth-wrap{min-height:100dvh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(var(--sat)+56px) 20px calc(var(--sab)+32px)}
+.auth-wrap{min-height:100dvh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:max(64px,calc(var(--sat)+56px)) 20px calc(var(--sab)+32px)}
 .brand{text-align:center;margin-bottom:28px}
 .brand-mark{width:52px;height:52px;background:var(--primary);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:24px;color:#fff;margin-bottom:12px}
 .brand h1{font-family:var(--ff-d);font-size:26px;margin-bottom:2px}
@@ -79,8 +79,8 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:1
 .pending-wrap h2{font-family:var(--ff-d);font-size:22px;margin-bottom:10px}
 .pending-wrap p{font-size:14px;color:var(--text-2);max-width:300px;line-height:1.65;margin-bottom:6px}
 .home{min-height:100dvh;min-height:100svh;padding-bottom:calc(var(--sab)+24px)}
-.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:calc(var(--sat)+12px) 16px 0;position:sticky;top:0;z-index:20}
-.header-row{display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;min-height:44px}
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:max(20px,calc(var(--sat)+16px)) 16px 0;position:sticky;top:0;z-index:20}
+.header-row{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;min-height:48px}
 .app-brand{display:flex;align-items:center;gap:9px}
 .app-brand-mark{width:30px;height:30px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:13px;color:#fff;flex-shrink:0}
 .app-brand-name{font-family:var(--ff-d);font-size:16px}
@@ -184,7 +184,7 @@ tr:last-child td{border-bottom:none}
 .step-text{font-size:13px;color:var(--text);line-height:1.55}
 .step-text strong{color:var(--primary)}
 .install-note{background:var(--warn-lt);border-radius:var(--radius-xs);padding:9px 12px;font-size:12px;color:var(--warn);margin-top:12px;line-height:1.5}
-.fab-wrap{position:fixed;top:calc(var(--sat)+12px);right:14px;z-index:50;display:flex;gap:7px}
+.fab-wrap{position:fixed;top:max(20px,calc(var(--sat)+16px));right:16px;z-index:50;display:flex;gap:7px}
 .fab{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-2);display:flex;align-items:center;gap:5px;box-shadow:var(--shadow);transition:all var(--t)}
 .fab:active{transform:scale(.95)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -545,9 +545,17 @@ function rFeePane(u){
   const showNextReminder=status==='paid'&&now.getDate()>=lastDay-1;
   const nextYM=`${now.getMonth()===11?now.getFullYear()+1:now.getFullYear()}-${String((now.getMonth()+2)>12?1:now.getMonth()+2).padStart(2,'0')}`;
 
-  // Build history (last 3 months)
+  // Build history from registration month to now
   const history=[];
-  for(let i=0;i<3;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;const rec=S.fees[k];history.push({ym:k,label:d.toLocaleString('en-IN',{month:'long',year:'numeric'}),status:rec?rec.status:'unpaid',amount:rec?rec.amount:u.monthlyFee||0,paidAt:rec?rec.paidAt:null});}
+  const regDate=u.createdAt?new Date(u.createdAt):now;
+  let hd=new Date(regDate.getFullYear(),regDate.getMonth(),1);
+  while(hd<=now){
+    const k=`${hd.getFullYear()}-${String(hd.getMonth()+1).padStart(2,'0')}`;
+    const rec=S.fees[k];
+    history.push({ym:k,label:hd.toLocaleString('en-IN',{month:'long',year:'numeric'}),status:rec?rec.status:'unpaid',amount:rec?rec.amount:u.monthlyFee||0,paidAt:rec?rec.paidAt:null});
+    hd=new Date(hd.getFullYear(),hd.getMonth()+1,1);
+  }
+  history.reverse(); // most recent first
 
   return`<div class="pane ${S.tab==='fees'?'active':''}">
   <div class="section-head"><h3>Fees</h3></div>
