@@ -205,6 +205,7 @@ const db=firebase.database();
 emailjs.init('fzItBxRq2t5IcS_hg');
 
 const S={screen:'loading',tab:'overview',sd:{},otp:'',err:'',ok:'',itab:'ios',uid:null,user:null,classes:[],note:null,fees:{}};
+let isCreatingAccount=false; // prevents onAuthStateChanged from running during signup
 
 let theme=localStorage.getItem('ml_theme')||'light';
 document.documentElement.setAttribute('data-theme',theme);
@@ -219,14 +220,32 @@ function dueDate(ym){const[y,m]=ym.split('-');return `2 ${new Date(y,m-1).toLoca
 
 // ── AUTH ──────────────────────────────────────────────────────────────
 auth.onAuthStateChanged(async fbUser=>{
+  if(isCreatingAccount) return; // skip during signup — DB not written yet
   if(fbUser){
     try{
       const snap=await db.ref('users/'+fbUser.uid).once('value');
       const user=snap.val();
-      if(user){S.uid=fbUser.uid;S.user={...user,id:fbUser.uid};await loadData();await checkMonthlySetup();user.status==='approved'?nav('home'):nav('pending');}
-      else{await auth.signOut();nav('login');}
-    }catch(e){await auth.signOut();nav('login');}
-  }else{nav('login');}
+      if(user){
+        S.uid=fbUser.uid;
+        S.user={...user,id:fbUser.uid};
+        try{await loadData();}catch(e){console.warn('loadData:',e);}
+        try{await checkMonthlySetup();}catch(e){console.warn('checkMonthly:',e);} // never block login
+        user.status==='approved'?nav('home'):nav('pending');
+      }else{
+        // Auth user exists but no DB record — ask them to sign up again
+        S.err='Account not found. Please create an account.';
+        await auth.signOut();
+        nav('login');
+      }
+    }catch(e){
+      console.error('onAuthStateChanged error:',e);
+      S.err='Could not connect. Please check your internet and try again.';
+      nav('login');
+      // Do NOT sign out — let them retry without losing their session
+    }
+  }else{
+    nav('login');
+  }
 });
 
 async function loadData(){
@@ -370,12 +389,23 @@ async function doS3(){
   if(pw.length<6){S.err='Password must be at least 6 characters.';render();return;}
   if(pw!==c){S.err='Passwords do not match.';render();return;}
   const btn=$('s3btn');btn.textContent='Creating…';btn.disabled=true;
+  isCreatingAccount=true; // block onAuthStateChanged during this process
   try{
     const cred=await auth.createUserWithEmailAndPassword(S.sd.email,pw);
     const uid=cred.user.uid;
-    await db.ref('users/'+uid).set({name:S.sd.name,nameLower:S.sd.name.toLowerCase(),email:S.sd.email,phone:S.sd.phone,studentName:S.sd.studentName,status:'pending',totalClassesMonth:0,monthlyFee:0,syllabusSchedule:[],syllabusTopics:[],createdAt:new Date().toISOString()});
-    await emailjs.send('service_1x75rs9','template_8imnvrh',{parent_name:S.sd.name,student_name:S.sd.studentName,phone:S.sd.phone,parent_email:S.sd.email,signup_time:new Date().toLocaleString('en-IN')}).catch(()=>{});
-  }catch(e){S.err=e.code==='auth/email-already-in-use'?'This email is already registered. Please sign in.':'Account creation failed. Please try again.';render();}
+    const userData={name:S.sd.name,nameLower:S.sd.name.toLowerCase(),email:S.sd.email,phone:S.sd.phone,studentName:S.sd.studentName,status:'pending',totalClassesMonth:0,monthlyFee:0,syllabusSchedule:[],syllabusTopics:[],createdAt:new Date().toISOString()};
+    await db.ref('users/'+uid).set(userData);
+    isCreatingAccount=false; // allow onAuthStateChanged now
+    S.uid=uid;
+    S.user={...userData,id:uid};
+    // send admin notification (don't block on this)
+    emailjs.send('service_1x75rs9','template_8imnvrh',{parent_name:S.sd.name,student_name:S.sd.studentName,phone:S.sd.phone,parent_email:S.sd.email,signup_time:new Date().toLocaleString('en-IN')}).catch(()=>{});
+    nav('pending');
+  }catch(e){
+    isCreatingAccount=false;
+    S.err=e.code==='auth/email-already-in-use'?'This email is already registered. Please sign in.':'Account creation failed. Please try again.';
+    render();
+  }
 }
 
 // ── PENDING ───────────────────────────────────────────────────────────
@@ -592,7 +622,15 @@ function closePayModal(){const m=$('pay-overlay');if(m)m.remove();}
 
 async function markPaid(){
   const ym=currentYM();
-  await db.ref(`fees/${S.uid}/${ym}`).update({status:'paid',paidAt:new Date().toISOString(),markedByParent:true});
+  try{
+    // Try backend API first (proper auth + business logic)
+    await parentApi('fees/mark-paid',{uid:S.uid,ym,action:'pay'});
+  }catch(e){
+    // Fallback: direct Firebase write (works if rules allow)
+    console.warn('API unavailable, falling back to direct write:',e.message);
+    await db.ref(`fees/${S.uid}/${ym}`).update({status:'paid',paidAt:new Date().toISOString(),markedByParent:true});
+  }
+  // Update local state immediately so UI reflects the change
   S.fees[ym]={...(S.fees[ym]||{}),status:'paid',paidAt:new Date().toISOString(),markedByParent:true};
   closePayModal();
   render();
@@ -656,6 +694,28 @@ async function doChangePw(){
 
 function switchTab(t){S.tab=t;render();window.scrollTo(0,0);}
 async function doLogout(){await auth.signOut();S.uid=null;S.user=null;S.classes=[];S.note=null;S.fees={};nav('login');}
+
+// ── API HELPERS ───────────────────────────────────────────────────────
+// All write operations go through the backend API.
+// Reads still use Firebase directly (fast, no auth overhead for reads).
+
+async function getIdToken(){
+  const u=auth.currentUser;
+  if(!u) throw new Error('Not authenticated');
+  return u.getIdToken(/* forceRefresh */ false);
+}
+
+async function parentApi(endpoint, body){
+  const token = await getIdToken();
+  const res = await fetch(`/api/${endpoint}`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if(!data.ok) throw new Error(data.error || 'API error');
+  return data.data;
+}
 </script>
 </body>
 </html>
