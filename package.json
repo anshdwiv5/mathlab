@@ -1,0 +1,12 @@
+{
+  "name": "mathlab",
+  "version": "1.0.0",
+  "description": "Math Lab tuition management platform",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}
