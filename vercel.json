@@ -1,6 +1,6 @@
 {
   "rewrites": [
     { "source": "/admin", "destination": "/mathlab-admin.html" },
-    { "source": "/", "destination": "/mathlab-parents.html" }
+    { "source": "/",      "destination": "/mathlab-parents.html" }
   ]
 }
