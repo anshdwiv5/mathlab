@@ -337,14 +337,18 @@ async function doApprove(){
   const rows=S.af.rows.filter(r=>r.month&&r.topic);
   const topics=S.af.topics.filter(t=>t.name.trim()).map(t=>({name:t.name.trim(),status:t.status}));
   const uid=S.approveModal;
-  await db.ref('users/'+uid).update({status:'approved',totalClassesMonth:tcm,monthlyFee:fee,syllabusSchedule:rows.length?rows:[],syllabusTopics:topics.length?topics:[]});
-  // Create current month fee record
-  const ym=currentYM();
-  await db.ref(`fees/${uid}/${ym}`).set({amount:fee,status:'unpaid',paidAt:null,markedByParent:false,reminderSent:false});
+  await adminApiWithFallback('users',
+    {action:'approve',userId:uid,totalClassesMonth:tcm,monthlyFee:fee,syllabusSchedule:rows,syllabusTopics:topics},
+    async()=>{
+      await db.ref('users/'+uid).update({status:'approved',totalClassesMonth:tcm,monthlyFee:fee,syllabusSchedule:rows.length?rows:[],syllabusTopics:topics.length?topics:[]});
+      const ym=currentYM();
+      await db.ref(`fees/${uid}/${ym}`).set({amount:fee,status:'unpaid',paidAt:null,markedByParent:false,reminderSent:false});
+    }
+  );
   closeModals();showToast('Approved','Parent portal is now active for '+S.allUsers[uid].name+'.');
 }
 
-async function doReject(uid){if(!confirm('Reject this request?'))return;await db.ref('users/'+uid).update({status:'rejected'});}
+async function doReject(uid){if(!confirm('Reject this request?'))return;await adminApiWithFallback('users',{action:'reject',userId:uid},()=>db.ref('users/'+uid).update({status:'rejected'}));}
 
 // ── STUDENTS ────────────────────────────────────────────────────────────
 function rStudents(){
@@ -407,8 +411,8 @@ function rFees(){
   </table></div>`}
   </div>`;}
 
-async function markFeePaid(uid,ym){await db.ref(`fees/${uid}/${ym}`).update({status:'paid',paidAt:new Date().toISOString(),markedByParent:false});}
-async function markFeeUnpaid(uid,ym){await db.ref(`fees/${uid}/${ym}`).update({status:'unpaid',paidAt:null});}
+async function markFeePaid(uid,ym){await adminApiWithFallback('fees/mark-paid',{uid,ym,action:'admin-update',isAdmin:true},()=>db.ref(`fees/${uid}/${ym}`).update({status:'paid',paidAt:new Date().toISOString(),markedByParent:false}));}
+async function markFeeUnpaid(uid,ym){await adminApiWithFallback('fees/mark-paid',{uid,ym,action:'unpay',isAdmin:true},()=>db.ref(`fees/${uid}/${ym}`).update({status:'unpaid',paidAt:null}));}
 
 function openFeeModal(uid,ym){S.feeModal={uid,ym};render();}
 function rFeeModal(){
@@ -427,7 +431,10 @@ async function doSaveFee(){
   const {uid,ym}=S.feeModal;
   const amt=parseFloat($('fm-amt').value)||0;
   const status=$('fm-status').value;
-  await db.ref(`fees/${uid}/${ym}`).update({amount:amt,status,paidAt:status==='paid'?new Date().toISOString():null});
+  await adminApiWithFallback('fees/mark-paid',
+    {uid,ym,action:'admin-update',isAdmin:true,amount:amt},
+    ()=>db.ref(`fees/${uid}/${ym}`).update({amount:amt,status,paidAt:status==='paid'?new Date().toISOString():null})
+  );
   closeModals();showToast('Updated','Fee record saved.');
 }
 
@@ -538,7 +545,10 @@ function etHTML(t,i){return`<div class="topic-row"><input placeholder="Topic nam
 
 async function doSaveTopics(){
   const topics=S.editTopics.filter(t=>t.name.trim()).map(t=>({name:t.name.trim(),status:t.status}));
-  await db.ref('users/'+S.editTopicsId).update({syllabusTopics:topics.length?topics:[]});
+  await adminApiWithFallback('users',
+    {action:'update-topics',userId:S.editTopicsId,syllabusTopics:topics},
+    ()=>db.ref('users/'+S.editTopicsId).update({syllabusTopics:topics.length?topics:[]})
+  );
   closeModals();showToast('Updated','Topics saved.');
 }
 
@@ -563,7 +573,10 @@ function rClassModal(){
 async function doLogClass(){
   const d=$('cl-d').value,t=$('cl-t').value.trim();
   if(!d||!t){S.err='Date and topic are required.';render();return;}
-  await db.ref('classes').push({userId:S.classModal,date:d,topic:t,homework:$('cl-h').value.trim(),hwDone:$('cl-done').checked,createdAt:new Date().toISOString()});
+  await adminApiWithFallback('classes',
+    {action:'create',userId:S.classModal,date:d,topic:t,homework:$('cl-h').value.trim(),hwDone:$('cl-done').checked},
+    ()=>db.ref('classes').push({userId:S.classModal,date:d,topic:t,homework:$('cl-h').value.trim(),hwDone:$('cl-done').checked,createdAt:new Date().toISOString()})
+  );
   closeModals();showToast('Class logged','Session saved.');
 }
 
@@ -587,7 +600,11 @@ function rEditClassModal(){
 async function doEditClass(){
   const d=$('ec-d').value,t=$('ec-t').value.trim();
   if(!d||!t){S.err='Date and topic are required.';render();return;}
-  await db.ref('classes/'+S.editClassId).update({date:d,topic:t,homework:$('ec-h').value.trim(),hwDone:$('ec-done').checked});
+  const update={date:d,topic:t,homework:$('ec-h').value.trim(),hwDone:$('ec-done').checked};
+  await adminApiWithFallback('classes',
+    {action:'update',classId:S.editClassId,...update},
+    ()=>db.ref('classes/'+S.editClassId).update(update)
+  );
   closeModals();showToast('Updated','Class entry saved.');
 }
 
@@ -609,7 +626,10 @@ function erHTML(r,i){return`<div class="builder-row"><input placeholder="Apr 202
 
 async function doSaveSched(){
   const rows=S.editRows.filter(r=>r.month&&r.topic);
-  await db.ref('users/'+S.editSchedId).update({syllabusSchedule:rows.length?rows:[]});
+  await adminApiWithFallback('users',
+    {action:'update-schedule',userId:S.editSchedId,syllabusSchedule:rows},
+    ()=>db.ref('users/'+S.editSchedId).update({syllabusSchedule:rows.length?rows:[]})
+  );
   closeModals();showToast('Updated','Schedule saved.');
 }
 
@@ -629,7 +649,10 @@ function rNoteModal(){
 async function doSaveNote(){
   const n=$('nt-n').value.trim(),w=$('nt-w').value;
   if(!n){S.err='Please write a note.';render();return;}
-  await db.ref('notes/'+S.noteModal).set({note:n,weekOf:w,updatedAt:new Date().toISOString()});
+  await adminApiWithFallback('notes',
+    {userId:S.noteModal,note:n,weekOf:w},
+    ()=>db.ref('notes/'+S.noteModal).set({note:n,weekOf:w,updatedAt:new Date().toISOString()})
+  );
   closeModals();showToast('Note saved','Parents can now see the note.');
 }
 
@@ -661,13 +684,48 @@ function doSavePw(){
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────────────
-async function setStatus(uid,idx,status){const topics=JSON.parse(JSON.stringify(S.allUsers[uid].syllabusTopics||[]));topics[idx].status=status;await db.ref('users/'+uid).update({syllabusTopics:topics});}
-async function toggleHW(classId,val){await db.ref('classes/'+classId).update({hwDone:val==='true'});}
-async function delClass(id){if(!confirm('Delete this class entry?'))return;await db.ref('classes/'+id).remove();}
-async function editTCM(uid){const v=prompt('Total classes per month:',S.allUsers[uid].totalClassesMonth);if(v===null)return;const n=parseInt(v);if(!n||n<1){alert('Enter a valid number.');return;}await db.ref('users/'+uid).update({totalClassesMonth:n});}
+async function setStatus(uid,idx,status){await adminApiWithFallback('users',{action:'update-topic-status',userId:uid,topicIndex:idx,status},async()=>{const topics=JSON.parse(JSON.stringify(S.allUsers[uid].syllabusTopics||[]));topics[idx].status=status;await db.ref('users/'+uid).update({syllabusTopics:topics});});}
+async function toggleHW(classId,val){await adminApiWithFallback('classes',{action:'toggle-hw',classId,hwDone:val==='true'},()=>db.ref('classes/'+classId).update({hwDone:val==='true'}));}
+async function delClass(id){if(!confirm('Delete this class entry?'))return;await adminApiWithFallback('classes',{action:'delete',classId:id},()=>db.ref('classes/'+id).remove());}
+async function editTCM(uid){const v=prompt('Total classes per month:',S.allUsers[uid].totalClassesMonth);if(v===null)return;const n=parseInt(v);if(!n||n<1){alert('Enter a valid number.');return;}await adminApiWithFallback('users',{action:'update-tcm',userId:uid,totalClassesMonth:n},()=>db.ref('users/'+uid).update({totalClassesMonth:n}));}
 function setSection(s){S.section=s;S.studentId=null;S.ok='';render();}
 function openSidebar(){const sb=$('sidebar'),ov=$('sb-overlay');if(sb)sb.classList.add('sb-open');if(ov)ov.classList.add('show');}
 function closeSidebar(){const sb=$('sidebar'),ov=$('sb-overlay');if(sb)sb.classList.remove('sb-open');if(ov)ov.classList.remove('show');}
+
+// ── API HELPERS ───────────────────────────────────────────────────────
+// Admin writes go through the backend API (Firebase Admin SDK, bypasses rules).
+// Falls back to direct Firebase write if API is not yet set up.
+const API_KEY = (function(){
+  try{return localStorage.getItem('ml_api_key')||'mathlab-api-2026';}catch{return'mathlab-api-2026';}
+})();
+
+async function adminApi(endpoint, body){
+  try{
+    const res=await fetch(`/api/${endpoint}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':API_KEY},
+      body:JSON.stringify(body)
+    });
+    const data=await res.json();
+    if(!data.ok) throw new Error(data.error||'API error');
+    return data.data;
+  }catch(e){
+    // If the API route doesn't exist yet (local dev / not deployed), log and rethrow
+    if(e.message.includes('Failed to fetch')||e.message.includes('NetworkError')){
+      console.warn('Backend API unreachable — make sure Vercel has deployed the /api routes.');
+    }
+    throw e;
+  }
+}
+
+async function adminApiWithFallback(endpoint, body, fallbackFn){
+  try{
+    return await adminApi(endpoint,body);
+  }catch(e){
+    console.warn(`API ${endpoint} failed, using direct Firebase write:`,e.message);
+    return fallbackFn();
+  }
+}
 function closeModals(){S.approveModal=null;S.classModal=null;S.editClassId=null;S.editSchedId=null;S.editTopicsId=null;S.noteModal=null;S.pwModal=false;S.feeModal=null;S.err='';S.ok='';render();}
 function doLogout(){S.loggedIn=false;render();}
 function showToast(title,body){const wrap=$('toast-wrap');if(!wrap)return;const id='t'+Date.now();const el=document.createElement('div');el.className='toast';el.id=id;el.innerHTML=`<div class="toast-title">${title}</div><div class="toast-body">${body}</div>`;wrap.appendChild(el);setTimeout(()=>{const e=$(id);if(e)e.remove();},4000);}
