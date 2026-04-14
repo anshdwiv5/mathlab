@@ -201,7 +201,7 @@ tr:hover td{background:var(--surface-alt)}
 </style>
 </head>
 <body>
-<div id="app"><div class="loading-screen"><div class="spinner"></div></div></div>
+<div id="app"></div>
 <script>
 // ── FIREBASE ───────────────────────────────────────────────────────────
 const firebaseConfig = {
@@ -259,37 +259,34 @@ function noteForUser(uid) {
 function startListeners() {
   db.ref('users').on('value', snap => {
     const data = snap.val()||{};
-    // Detect new pending
     if (S.loggedIn) {
       Object.entries(data).forEach(([id,u]) => {
         if (u.status==='pending' && !S.lastPendingKeys.has(id)) {
-          if (S.lastPendingKeys.size > 0) { // Don't toast on initial load
+          if (S.lastPendingKeys.size > 0) {
             showToast('New request', u.name + ' signed up for ' + u.studentName + '.');
-            if (!S.studentId && !S.approveModal) { S.section='pending'; }
+            if (!S.studentId && !S.approveModal) S.section='pending';
           }
           S.lastPendingKeys.add(id);
         }
       });
-      // Remove keys for non-pending
-      Object.entries(data).forEach(([id,u]) => {
-        if (u.status!=='pending') S.lastPendingKeys.delete(id);
-      });
+      Object.entries(data).forEach(([id,u]) => { if(u.status!=='pending') S.lastPendingKeys.delete(id); });
     } else {
       Object.entries(data).forEach(([id,u]) => { if(u.status==='pending') S.lastPendingKeys.add(id); });
     }
     S.allUsers = data;
-    if (S.loggedIn) render();
-  });
+    // Only re-render if logged in and no modal is open
+    if (S.loggedIn && !S.approveModal && !S.classModal && !S.editClassId && !S.editSchedId && !S.noteModal && !S.pwModal) render();
+  }, err => console.warn('users listener error:', err));
 
   db.ref('classes').on('value', snap => {
     S.allClasses = snap.val()||{};
-    if (S.loggedIn) render();
-  });
+    if (S.loggedIn && !S.approveModal && !S.classModal && !S.editClassId && !S.editSchedId && !S.noteModal && !S.pwModal) render();
+  }, err => console.warn('classes listener error:', err));
 
   db.ref('notes').on('value', snap => {
     S.allNotes = snap.val()||{};
-    if (S.loggedIn) render();
-  });
+    if (S.loggedIn && !S.approveModal && !S.classModal && !S.editClassId && !S.editSchedId && !S.noteModal && !S.pwModal) render();
+  }, err => console.warn('notes listener error:', err));
 }
 
 startListeners();
@@ -782,6 +779,9 @@ function showToast(title, body) {
   wrap.appendChild(el);
   setTimeout(()=>{const e=$(id);if(e)e.remove();},4000);
 }
+
+// Show login immediately — don't wait for Firebase
+render();
 </script>
 </body>
 </html>
