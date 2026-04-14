@@ -2,894 +2,704 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Math Lab — Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0F1117;--bg-card:#1A2030;--bg-side:#141824;--bg-in:#242A3C;
-  --text:#E8E6E0;--text-2:#9CA3AF;--text-3:#6B7280;
-  --primary:#4ADE80;--primary-r:74,222,128;--primary-lt:#052E16;--primary-hv:#22C55E;
-  --accent:#FCD34D;--accent-lt:#1C1709;--accent-r:252,211,77;
-  --red:#F87171;--red-lt:#2D0F0F;
-  --border:#2D3348;--border-lt:#242A3C;
-  --r:12px;--r-sm:8px;--sh:0 1px 12px rgba(0,0,0,.2);--sh-lg:0 4px 28px rgba(0,0,0,.35);
-  --t:.2s ease;--ff-d:'DM Serif Display',Georgia,serif;--ff-b:'DM Sans',sans-serif;
+  --bg:#0C0C0E;--surface:#161618;--surface-alt:#1E1E21;--surface-up:#242428;
+  --text:#FAFAFA;--text-2:#A1A1AA;--text-3:#52525B;
+  --primary:#22C55E;--primary-r:34,197,94;--primary-lt:#052E16;--primary-hv:#16A34A;
+  --danger:#F87171;--danger-lt:#1C0A0A;
+  --warn:#FCD34D;--warn-lt:#1C1500;
+  --border:#27272A;--border-strong:#3F3F46;
+  --radius:10px;--radius-sm:7px;--radius-xs:5px;
+  --shadow:0 1px 3px rgba(0,0,0,.3);--shadow-md:0 4px 16px rgba(0,0,0,.4);
+  --ff-d:'DM Serif Display',Georgia,serif;--ff-b:'DM Sans',sans-serif;
+  --t:150ms ease;
+  --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
 }
 [data-theme="light"]{
-  --bg:#F5F2EB;--bg-card:#FFFFFF;--bg-side:#1A2030;--bg-in:#EDE9DC;
-  --text:#1C1917;--text-2:#57534E;--text-3:#A8A29E;
-  --primary:#166534;--primary-r:22,101,52;--primary-lt:#DCFCE7;--primary-hv:#14532D;
-  --accent:#B45309;--accent-lt:#FEF3C7;--accent-r:180,83,9;
-  --red:#DC2626;--red-lt:#FEE2E2;
-  --border:#D6D0BE;--border-lt:#E7E4D8;
+  --bg:#F7F7F6;--surface:#FFFFFF;--surface-alt:#F0EFED;--surface-up:#FFFFFF;
+  --text:#18181B;--text-2:#71717A;--text-3:#A1A1AA;
+  --primary:#166534;--primary-r:22,101,52;--primary-lt:#F0FDF4;--primary-hv:#14532D;
+  --danger:#DC2626;--danger-lt:#FEF2F2;
+  --warn:#92400E;--warn-lt:#FFFBEB;
+  --border:#E4E4E7;--border-strong:#D1D1D6;
 }
-body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--t),color var(--t)}
+html{-webkit-text-size-adjust:100%;overflow-x:hidden}
+body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:100dvh;-webkit-tap-highlight-color:transparent}
+#app{display:flex;min-height:100dvh}
 
-/* ── LAYOUT ── */
-.app-wrap{display:flex;min-height:100vh}
-.sidebar{width:220px;min-height:100vh;background:var(--bg-side);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:50}
-.main{margin-left:220px;flex:1;padding:28px;min-height:100vh}
-@media(max-width:640px){.sidebar{width:60px}.sidebar .nav-label,.sidebar .logo-txt,.sidebar .admin-badge{display:none}.main{margin-left:60px;padding:16px}}
+/* ── SIDEBAR ── */
+.sidebar{width:200px;min-height:100dvh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:30}
+.sb-top{padding:20px 14px 12px;border-bottom:1px solid var(--border)}
+.sb-brand{display:flex;align-items:center;gap:9px}
+.sb-mark{width:30px;height:30px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:13px;color:#fff;flex-shrink:0}
+[data-theme="dark"] .sb-mark{color:#0C0C0E}
+.sb-name{font-family:var(--ff-d);font-size:15px;color:var(--text)}
+.sb-sub{font-size:10px;color:var(--text-3);margin-top:1px;letter-spacing:.04em;text-transform:uppercase}
+.sb-nav{flex:1;padding:10px 8px}
+.nav-link{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:var(--radius-xs);cursor:pointer;font-size:13px;font-weight:500;color:var(--text-2);transition:all var(--t);border:none;background:none;width:100%;font-family:var(--ff-b);text-align:left;margin-bottom:1px}
+.nav-link:hover{background:var(--surface-alt);color:var(--text)}
+.nav-link.active{background:rgba(var(--primary-r),.1);color:var(--primary)}
+.nav-badge{background:var(--danger);color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 6px;line-height:1.4}
+.sb-footer{padding:10px 8px 12px;border-top:1px solid var(--border)}
+.sb-btn{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--radius-xs);cursor:pointer;font-size:13px;color:var(--text-2);transition:all var(--t);border:none;background:none;width:100%;font-family:var(--ff-b);text-align:left}
+.sb-btn:hover{background:var(--surface-alt);color:var(--text)}
+.sb-btn.danger:hover{background:var(--danger-lt);color:var(--danger)}
+@media(max-width:640px){
+  .sidebar{width:50px}
+  .sb-name,.sb-sub,.nav-text,.sb-btn-label{display:none}
+  .nav-badge{display:none}
+  .sb-top{padding:16px 10px}
+  .sb-nav{padding:8px 6px}
+  .nav-link{justify-content:center;padding:8px}
+  .sb-btn{justify-content:center;padding:8px}
+}
 
-/* Sidebar */
-.sb-logo{padding:20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.sb-logo-icon{width:36px;height:36px;background:var(--primary);border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#0F1117;font-family:var(--ff-d);font-size:17px;font-weight:700}
-.logo-txt{display:flex;flex-direction:column}
-.logo-txt strong{font-family:var(--ff-d);font-size:16px;color:var(--text);line-height:1}
-.logo-txt small{font-size:11px;color:var(--text-3);margin-top:2px}
-.sb-nav{flex:1;padding:14px 10px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r-sm);cursor:pointer;transition:all var(--t);margin-bottom:2px;color:var(--text-2);font-size:14px;font-weight:500}
-.nav-item:hover{background:var(--bg-in);color:var(--text)}
-.nav-item.active{background:rgba(var(--primary-r),.12);color:var(--primary)}
-.nav-icon{font-size:16px;flex-shrink:0;width:20px;text-align:center}
-.nav-badge{background:var(--red);color:#fff;border-radius:50px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:auto}
-.sb-footer{padding:14px 10px;border-top:1px solid var(--border)}
-.admin-info{padding:8px 10px;font-size:12px;color:var(--text-3)}
-.admin-badge{font-weight:600;color:var(--text-2);font-size:13px;display:block;margin-bottom:2px}
-
-/* Theme toggle */
-.th-btn{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r-sm);cursor:pointer;color:var(--text-2);font-size:13px;transition:all var(--t);background:none;border:none;font-family:var(--ff-b);width:100%}
-.th-btn:hover{background:var(--bg-in);color:var(--text)}
-.logout-btn{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r-sm);cursor:pointer;color:var(--red);font-size:13px;transition:all var(--t);background:none;border:none;font-family:var(--ff-b);width:100%;margin-top:4px}
-.logout-btn:hover{background:var(--red-lt)}
+/* ── MAIN ── */
+.main{margin-left:200px;flex:1;padding:28px 24px;min-height:100dvh}
+@media(max-width:640px){.main{margin-left:50px;padding:20px 14px}}
 
 /* ── LOGIN ── */
-.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg)}
-.login-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:36px 32px;width:100%;max-width:380px;box-shadow:var(--sh-lg)}
-.login-logo{text-align:center;margin-bottom:28px}
-.login-logo-icon{width:56px;height:56px;background:var(--primary);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:26px;color:#0F1117;margin-bottom:10px}
-.login-logo h1{font-family:var(--ff-d);font-size:24px}
-.login-logo p{font-size:13px;color:var(--text-2);margin-top:3px}
+.login-wrap{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px 28px;width:100%;max-width:360px;box-shadow:var(--shadow-md)}
+.login-brand{text-align:center;margin-bottom:24px}
+.login-mark{width:48px;height:48px;background:var(--primary);border-radius:13px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:22px;color:#fff;margin-bottom:10px}
+[data-theme="dark"] .login-mark{color:#0C0C0E}
+.login-brand h1{font-family:var(--ff-d);font-size:22px;margin-bottom:3px}
+.login-brand p{font-size:13px;color:var(--text-2)}
+
+/* ── TYPOGRAPHY ── */
+.page-title{font-family:var(--ff-d);font-size:22px;margin-bottom:3px}
+.page-sub{font-size:13px;color:var(--text-2);margin-bottom:22px}
+.section-title{font-family:var(--ff-d);font-size:18px;margin:24px 0 14px}
 
 /* ── FORM ── */
-.fg{margin-bottom:14px}
-.fg label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;letter-spacing:.04em;text-transform:uppercase}
-.fg input,.fg textarea,.fg select{width:100%;padding:11px 14px;background:var(--bg-in);border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:var(--ff-b);font-size:14px;color:var(--text);transition:all var(--t);outline:none}
-.fg input:focus,.fg textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(var(--primary-r),.12)}
-.fg input::placeholder,.fg textarea::placeholder{color:var(--text-3)}
-.fg textarea{resize:vertical;min-height:80px}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;letter-spacing:.03em}
+.field input,.field textarea,.field select{width:100%;padding:10px 12px;background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius-xs);font-family:var(--ff-b);font-size:14px;color:var(--text);outline:none;transition:border-color var(--t),box-shadow var(--t)}
+.field input:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(var(--primary-r),.1)}
+.field input::placeholder,.field textarea::placeholder{color:var(--text-3)}
+.field textarea{resize:vertical;min-height:90px}
 
 /* ── BUTTONS ── */
-.btn{padding:11px 18px;border:none;border-radius:var(--r-sm);font-family:var(--ff-b);font-size:14px;font-weight:600;cursor:pointer;transition:all var(--t);display:inline-flex;align-items:center;gap:6px}
-.btn-full{width:100%}
-.btn-p{background:var(--primary);color:#0F1117}
-.btn-p:hover{background:var(--primary-hv);transform:translateY(-1px)}
-.btn-p:disabled{opacity:.6;cursor:not-allowed;transform:none}
-.btn-gh{background:transparent;border:1.5px solid var(--border);color:var(--text-2)}
-.btn-gh:hover{border-color:var(--primary);color:var(--primary)}
-.btn-red{background:var(--red-lt);color:var(--red);border:1.5px solid var(--red)}
-.btn-red:hover{background:var(--red);color:#fff}
-.btn-sm{padding:6px 12px;font-size:12px}
-.btn-accent{background:rgba(var(--accent-r),.15);color:var(--accent);border:1.5px solid var(--accent)}
-.btn-accent:hover{background:var(--accent);color:#0F1117}
-
-/* ── PAGE HEADERS ── */
-.page-title{font-family:var(--ff-d);font-size:26px;margin-bottom:4px}
-.page-sub{font-size:14px;color:var(--text-2);margin-bottom:24px}
-.section-title{font-family:var(--ff-d);font-size:20px;margin-bottom:14px;margin-top:28px}
+.btn{padding:10px 16px;border:none;border-radius:var(--radius-xs);font-family:var(--ff-b);font-size:13px;font-weight:600;cursor:pointer;transition:all var(--t);display:inline-flex;align-items:center;gap:5px;touch-action:manipulation}
+.btn-full{display:flex;width:100%;justify-content:center;padding:11px 16px;font-size:14px}
+.btn-primary{background:var(--primary);color:#fff}
+[data-theme="dark"] .btn-primary{color:#0C0C0E}
+.btn-primary:hover{background:var(--primary-hv)}
+.btn-primary:disabled{opacity:.55;cursor:not-allowed}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-2)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+.btn-danger{background:var(--danger-lt);color:var(--danger);border:1px solid var(--danger)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-warn{background:rgba(var(--primary-r),.1);color:var(--primary);border:1px solid rgba(var(--primary-r),.2)}
 
 /* ── ALERTS ── */
-.err{background:var(--red-lt);color:var(--red);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;margin-bottom:14px}
-.succ{background:var(--primary-lt);color:var(--primary);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;margin-bottom:14px}
+.alert{border-radius:var(--radius-xs);padding:9px 12px;font-size:13px;margin-bottom:13px;line-height:1.5}
+.alert-err{background:var(--danger-lt);color:var(--danger)}
+.alert-ok{background:var(--primary-lt);color:var(--primary)}
 
-/* ── CARDS ── */
-.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
-.card-row{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap}
-.card-info{flex:1;min-width:180px}
-.card-info h4{font-weight:600;font-size:15px;margin-bottom:3px}
-.card-info p{font-size:13px;color:var(--text-2);margin-bottom:2px}
-.card-actions{display:flex;gap:8px;flex-shrink:0;align-items:center}
-.card+.card{margin-top:12px}
+/* ── CARD ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px}
+.card-row{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.card-body{flex:1;min-width:0}
+.card-body h4{font-size:14px;font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-body p{font-size:13px;color:var(--text-2);margin-bottom:1px;line-height:1.5}
+.card-body .meta{font-size:11px;color:var(--text-3);margin-top:5px}
+.card-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap}
 
 /* ── BADGES ── */
-.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:50px;font-size:11px;font-weight:600}
-.bdg-p{background:rgba(var(--accent-r),.15);color:var(--accent)}
-.bdg-g{background:var(--primary-lt);color:var(--primary)}
-.bdg-r{background:var(--red-lt);color:var(--red)}
-.bdg-gr{background:var(--border);color:var(--text-2)}
-.bdg-y{background:rgba(var(--accent-r),.12);color:var(--accent)}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.badge-green{background:var(--primary-lt);color:var(--primary)}
+.badge-amber{background:var(--warn-lt);color:var(--warn)}
+.badge-neutral{background:var(--surface-alt);color:var(--text-2);border:1px solid var(--border)}
+.badge-pending{background:rgba(252,211,77,.1);color:var(--warn)}
 
 /* ── TABLE ── */
-.tbl-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh);margin-bottom:24px}
-table{width:100%;border-collapse:collapse;background:var(--bg-card);font-size:13px}
-th{background:rgba(var(--primary-r),.08);color:var(--primary);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:10px 14px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--border)}
-td{padding:11px 14px;border-bottom:1px solid var(--border-lt);color:var(--text)}
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);margin-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:500px}
+thead tr{border-bottom:1px solid var(--border)}
+th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);white-space:nowrap;background:var(--surface-alt)}
+td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:var(--bg-in)}
-.td-actions{display:flex;gap:6px}
+tr:hover td{background:var(--surface-alt)}
+.td-actions{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ── STATS ROW ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 14px}
+.stat-box .sl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px}
+.stat-box .sv{font-family:var(--ff-d);font-size:22px;color:var(--primary)}
+.stat-box .ss{font-size:11px;color:var(--text-2);margin-top:2px;cursor:pointer}
+.stat-box .ss a{color:var(--primary)}
+
+/* ── CREDENTIALS CARD ── */
+.cred-card{background:var(--surface);border:1px solid var(--border-strong);border-left:3px solid var(--warn);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px}
+.cred-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;margin-top:10px}
+.cred-item .cl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:3px}
+.cred-item .cv{font-weight:600;color:var(--text);font-family:monospace;letter-spacing:.03em}
+.reveal-btn{background:none;border:none;cursor:pointer;color:var(--primary);font-size:12px;font-weight:600;padding:0;font-family:var(--ff-b);margin-left:8px}
+
+/* ── BUILDER (rows) ── */
+.builder{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:8px}
+.builder-head{display:grid;grid-template-columns:1fr 70px 2fr 90px 32px;gap:6px;padding:7px 10px;background:var(--surface-alt);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3)}
+.builder-row{display:grid;grid-template-columns:1fr 70px 2fr 90px 32px;gap:6px;padding:6px 10px;border-top:1px solid var(--border)}
+.builder-row input,.builder-row select{background:var(--surface-alt);border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-family:var(--ff-b);font-size:12px;color:var(--text);outline:none;width:100%}
+.builder-row input:focus,.builder-row select:focus{border-color:var(--primary)}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--text-3);font-size:14px;width:100%;height:100%;display:flex;align-items:center;justify-content:center;transition:color var(--t)}
+.del-btn:hover{color:var(--danger)}
+
+/* Topic rows */
+.topic-builder{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:8px}
+.topic-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border)}
+.topic-row:last-child{border-bottom:none}
+.topic-row input{flex:1;background:var(--surface-alt);border:1px solid var(--border);border-radius:4px;padding:6px 9px;font-family:var(--ff-b);font-size:13px;color:var(--text);outline:none}
+.topic-row input:focus{border-color:var(--primary)}
+.topic-row select{background:var(--surface-alt);border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-family:var(--ff-b);font-size:12px;color:var(--text);outline:none;cursor:pointer}
+
+/* Status toggle */
+.status-toggle{display:flex;gap:3px}
+.stbtn{padding:3px 9px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-3);font-family:var(--ff-b);transition:all var(--t)}
+.stbtn.s-done{border-color:var(--primary);background:var(--primary-lt);color:var(--primary)}
+.stbtn.s-ongoing{border-color:var(--warn);background:var(--warn-lt);color:var(--warn)}
+.stbtn.s-not{border-color:var(--border-strong);background:var(--surface-alt);color:var(--text-2)}
+
+/* ── NOTE PREVIEW ── */
+.note-preview{background:var(--surface-alt);border-radius:var(--radius-xs);padding:12px;font-size:13px;color:var(--text-2);line-height:1.65;font-style:italic;margin-bottom:10px}
 
 /* ── MODAL ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;backdrop-filter:blur(3px)}
-.modal{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:28px;width:100%;max-width:560px;box-shadow:var(--sh-lg);max-height:90vh;overflow-y:auto}
-.modal h3{font-family:var(--ff-d);font-size:22px;margin-bottom:6px}
-.modal .modal-sub{font-size:13px;color:var(--text-2);margin-bottom:20px}
-.modal-footer{display:flex;gap:10px;margin-top:22px;padding-top:16px;border-top:1px solid var(--border)}
-.modal-footer .btn{flex:1}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;backdrop-filter:blur(3px)}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:100%;max-width:540px;box-shadow:var(--shadow-md);max-height:90dvh;overflow-y:auto;animation:fadeUp .15s ease}
+.modal h3{font-family:var(--ff-d);font-size:20px;margin-bottom:4px}
+.modal .modal-sub{font-size:13px;color:var(--text-2);margin-bottom:18px}
+.modal-actions{display:flex;gap:8px;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
+.modal-actions .btn{flex:1;justify-content:center}
 
-/* Syllabus row builder */
-.rows-builder{border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;margin-bottom:10px}
-.row-hd{display:grid;grid-template-columns:1fr 80px 2fr 1fr 36px;gap:6px;padding:8px 10px;background:var(--bg-in);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3)}
-.rb-row{display:grid;grid-template-columns:1fr 80px 2fr 1fr 36px;gap:6px;padding:6px 10px;border-top:1px solid var(--border-lt)}
-.rb-row input,.rb-row select{background:var(--bg-in);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-family:var(--ff-b);font-size:13px;color:var(--text);outline:none;width:100%}
-.rb-row input:focus,.rb-row select:focus{border-color:var(--primary)}
-.rb-del{background:none;border:none;cursor:pointer;color:var(--text-3);font-size:16px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;transition:color var(--t)}
-.rb-del:hover{color:var(--red)}
+/* ── TOAST ── */
+.toast-wrap{position:fixed;top:16px;right:16px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;box-shadow:var(--shadow-md);min-width:260px;pointer-events:all;animation:slideIn .2s ease;border-left:3px solid var(--primary)}
+.toast-title{font-size:13px;font-weight:600;margin-bottom:2px}
+.toast-body{font-size:12px;color:var(--text-2)}
+@keyframes slideIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
 
-/* Topics builder */
-.topics-list{border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;margin-bottom:10px}
-.topic-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border-lt)}
-.topic-row:last-child{border-bottom:none}
-.topic-row input{flex:1;background:var(--bg-in);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:var(--ff-b);font-size:13px;color:var(--text);outline:none}
-.topic-row input:focus{border-color:var(--primary)}
-.topic-status-sel{background:var(--bg-in);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-family:var(--ff-b);font-size:12px;color:var(--text);outline:none;cursor:pointer}
-
-/* Status toggle in student view */
-.status-toggle{display:flex;gap:4px}
-.st-btn{padding:4px 10px;border-radius:50px;font-size:11px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--text-3);font-family:var(--ff-b);transition:all var(--t)}
-.st-btn.active-completed{border-color:var(--primary);background:var(--primary-lt);color:var(--primary)}
-.st-btn.active-ongoing{border-color:var(--accent);background:rgba(var(--accent-r),.1);color:var(--accent)}
-.st-btn.active-not{border-color:var(--border);background:var(--border-lt);color:var(--text-2)}
-
-/* Stats row */
-.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}
-.stat-mini{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh)}
-.stat-mini .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3);margin-bottom:6px}
-.stat-mini .val{font-family:var(--ff-d);font-size:26px;color:var(--primary)}
-.stat-mini .sub{font-size:12px;color:var(--text-2);margin-top:2px}
-
-/* Toast notification */
-.toast-wrap{position:fixed;top:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:10px;pointer-events:none}
-.toast{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;box-shadow:var(--sh-lg);display:flex;align-items:flex-start;gap:12px;min-width:280px;max-width:360px;pointer-events:all;animation:slideIn .3s ease forwards}
-.toast-icon{font-size:20px;flex-shrink:0;margin-top:1px}
-.toast-body strong{display:block;font-size:14px;margin-bottom:2px}
-.toast-body p{font-size:13px;color:var(--text-2)}
-.toast-close{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-3);font-size:16px;flex-shrink:0;padding:0}
-.toast-close:hover{color:var(--text)}
-.toast.new-request{border-left:3px solid var(--accent)}
-@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-@keyframes slideOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(20px)}}
-
-/* Back btn */
-.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-2);cursor:pointer;margin-bottom:20px;transition:color var(--t);background:none;border:none;font-family:var(--ff-b)}
+/* ── MISC ── */
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-2);cursor:pointer;margin-bottom:18px;transition:color var(--t);background:none;border:none;font-family:var(--ff-b);padding:0}
 .back-btn:hover{color:var(--primary)}
-
-/* Empty */
-.empty{text-align:center;padding:48px 24px;color:var(--text-3)}
-.empty .ei{font-size:36px;margin-bottom:12px}
-.empty p{font-size:14px}
-
-/* Animations */
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.fade-in{animation:fadeUp .3s ease forwards}
-
-/* Student tag */
-.student-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(var(--primary-r),.1);border:1px solid rgba(var(--primary-r),.25);color:var(--primary);padding:4px 12px;border-radius:50px;font-size:13px;font-weight:600;margin-bottom:16px}
-
-/* Note textarea */
-.note-preview{background:var(--bg-in);border-radius:var(--r-sm);padding:14px;font-size:14px;color:var(--text-2);line-height:1.65;font-style:italic;min-height:60px;margin-bottom:12px}
+.empty{text-align:center;padding:40px 20px;color:var(--text-3)}
+.empty p{font-size:13px;line-height:1.6}
+.row-between{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.divider{height:1px;background:var(--border);margin:20px 0}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade{animation:fadeUp .2s ease}
 </style>
 </head>
 <body>
 <div id="app"></div>
 
 <script>
-// ── DATA ─────────────────────────────────────────────────────────────
-const K = { USERS:'ml_users', CLASSES:'ml_classes', NOTES:'ml_notes', THEME:'ml_theme', ADM:'ml_adm' };
-const getLS = k => { try { return JSON.parse(localStorage.getItem(k)||'null') } catch { return null } };
-const setLS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
-const getUsers = () => getLS(K.USERS)||[];
-const saveUsers = u => setLS(K.USERS,u);
-const getClasses = uid => (getLS(K.CLASSES)||[]).filter(c=>c.userId===uid);
-const saveClasses = classes => setLS(K.CLASSES, classes);
-const getAllClasses = () => getLS(K.CLASSES)||[];
-const getNotes = () => getLS(K.NOTES)||[];
-const getNote = uid => getNotes().find(n=>n.userId===uid)||null;
-const fmtDate = d => new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-const $ = id => document.getElementById(id);
+const K={USERS:'ml_users',CLASSES:'ml_classes',NOTES:'ml_notes',THEME:'ml_theme',ADM:'ml_adm'};
+const ls=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};
+const sl=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const getUsers=()=>ls(K.USERS)||[];
+const saveUsers=u=>sl(K.USERS,u);
+const getClasses=uid=>(ls(K.CLASSES)||[]).filter(c=>c.userId===uid);
+const saveClasses=c=>sl(K.CLASSES,c);
+const allClasses=()=>ls(K.CLASSES)||[];
+const notes=()=>ls(K.NOTES)||[];
+const getNote=uid=>notes().find(n=>n.userId===uid)||null;
+const fmt=d=>new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+const $=id=>document.getElementById(id);
+const getCreds=()=>ls(K.ADM)||{username:'ansh',password:'mathlab2026'};
 
-// Default admin credentials
-function getAdmCreds(){ return getLS(K.ADM)||{username:'ansh',password:'mathlab2024'} }
-
-// ── THEME ─────────────────────────────────────────────────────────────
-let theme = localStorage.getItem(K.THEME)||'dark';
-document.documentElement.setAttribute('data-theme', theme);
+let theme=localStorage.getItem(K.THEME)||'dark';
+document.documentElement.setAttribute('data-theme',theme);
 function toggleTheme(){
-  theme = theme==='light'?'dark':'light';
+  theme=theme==='light'?'dark':'light';
   localStorage.setItem(K.THEME,theme);
   document.documentElement.setAttribute('data-theme',theme);
   render();
 }
 
-// ── STATE ─────────────────────────────────────────────────────────────
-let S = {
-  loggedIn: false, section:'pending', studentId:null,
-  error:'', info:'',
-  // modals
-  approveModal:null,       // userId
-  classModal:null,         // userId
-  noteModal:null,          // userId
-  settingsModal:false,
-  // Approval form data
-  af: { totalClassesMonth:'', schedRows:[{month:'',week:'',topic:'',type:''}], topics:[{name:'',status:'not_started'}] }
+let S={
+  loggedIn:false,section:'pending',studentId:null,
+  err:'',ok:'',
+  approveModal:null,classModal:null,editClassId:null,editSchedId:null,noteModal:null,pwModal:false,
+  af:{tcm:'8',rows:[{month:'',week:'1',topic:'',type:'New'}],topics:[{name:'',status:'not_started'}]},
+  editRows:[],pendingCount:0
 };
 
-// ── RENDER ────────────────────────────────────────────────────────────
-function render(){
-  $('app').innerHTML = S.loggedIn ? rAdmin() : rLogin();
-}
+function render(){$('app').innerHTML=S.loggedIn?rShell():rLogin();}
 
-// ── LOGIN ─────────────────────────────────────────────────────────────
-function rLogin(){
-  return `<div class="login-screen fade-in">
+// ── LOGIN ──────────────────────────────────────────────────────────────
+function rLogin(){return`<div class="login-wrap fade">
   <div class="login-card">
-    <div class="login-logo">
-      <div class="login-logo-icon">∑</div>
+    <div class="login-brand">
+      <div class="login-mark">∑</div>
       <h1>Math Lab</h1><p>Admin Panel</p>
     </div>
-    ${S.error?`<div class="err">${S.error}</div>`:''}
-    <div class="fg"><label>Username</label><input id="lu" type="text" placeholder="ansh" value="ansh" /></div>
-    <div class="fg"><label>Password</label><input id="lp" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')doAdmLogin()" /></div>
-    <button class="btn btn-p btn-full" onclick="doAdmLogin()" style="margin-top:4px">Sign In →</button>
-  </div></div>`;
-}
+    ${S.err?`<div class="alert alert-err">${S.err}</div>`:''}
+    <div class="field"><label>Username</label><input id="lu" type="text" value="ansh" autocapitalize="none"/></div>
+    <div class="field"><label>Password</label><input id="lp" type="password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()" style="margin-top:4px">Sign in</button>
+  </div></div>`;}
 
-function doAdmLogin(){
-  const u=$('lu').value.trim(), p=$('lp').value;
-  const creds = getAdmCreds();
-  if(u===creds.username && p===creds.password){
-    S.loggedIn=true; S.error='';
-    lastKnownPendingCount = getUsers().filter(u=>u.status==='pending').length;
+function doLogin(){
+  const u=$('lu').value.trim(),p=$('lp').value;
+  const c=getCreds();
+  if(u===c.username&&p===c.password){
+    S.loggedIn=true;S.err='';
+    S.pendingCount=getUsers().filter(u=>u.status==='pending').length;
     render();
-  }
-  else { S.error='Invalid credentials.'; render(); }
+  }else{S.err='Invalid credentials.';render();}
 }
 
-// ── ADMIN SHELL ───────────────────────────────────────────────────────
-function rAdmin(){
-  const users = getUsers();
-  const pending = users.filter(u=>u.status==='pending');
-  return `<div class="app-wrap fade-in">
-  <!-- SIDEBAR -->
+// ── SHELL ──────────────────────────────────────────────────────────────
+function rShell(){
+  const pending=getUsers().filter(u=>u.status==='pending');
+  return`<div style="display:flex;min-height:100dvh" class="fade">
   <div class="sidebar">
-    <div class="sb-logo">
-      <div class="sb-logo-icon">∑</div>
-      <div class="logo-txt"><strong>Math Lab</strong><small>Admin</small></div>
+    <div class="sb-top">
+      <div class="sb-brand">
+        <div class="sb-mark">∑</div>
+        <div><div class="sb-name">Math Lab</div><div class="sb-sub">Admin</div></div>
+      </div>
     </div>
     <div class="sb-nav">
-      <div class="nav-item ${S.section==='pending'&&!S.studentId?'active':''}" onclick="setSection('pending')">
-        <span class="nav-icon">📥</span><span class="nav-label">Requests</span>
-        ${pending.length>0?`<span class="nav-badge">${pending.length}</span>`:''}
-      </div>
-      <div class="nav-item ${S.section==='students'&&!S.studentId?'active':''}" onclick="setSection('students')">
-        <span class="nav-icon">👨‍🎓</span><span class="nav-label">Students</span>
-      </div>
+      <button class="nav-link ${S.section==='pending'&&!S.studentId?'active':''}" onclick="setSection('pending')">
+        <span class="nav-text">Requests</span>
+        ${pending.length?`<span class="nav-badge">${pending.length}</span>`:''}
+      </button>
+      <button class="nav-link ${S.section==='students'&&!S.studentId?'active':''}" onclick="setSection('students')">
+        <span class="nav-text">Students</span>
+      </button>
     </div>
     <div class="sb-footer">
-      <div class="admin-info"><span class="admin-badge">Ansh</span>Admin</div>
-      <button class="th-btn" onclick="toggleTheme()"><span>${theme==='dark'?'☀️':'🌙'}</span><span class="nav-label">${theme==='dark'?'Light':'Dark'} mode</span></button>
-      <button class="th-btn" onclick="showSettings()"><span>⚙️</span><span class="nav-label">Settings</span></button>
-      <button class="logout-btn" onclick="doLogout()"><span>🚪</span><span class="nav-label">Sign Out</span></button>
+      <button class="sb-btn" onclick="toggleTheme()"><span class="sb-btn-label">${theme==='dark'?'Light mode':'Dark mode'}</span></button>
+      <button class="sb-btn" onclick="S.pwModal=true;render()"><span class="sb-btn-label">Change password</span></button>
+      <button class="sb-btn danger" onclick="doLogout()"><span class="sb-btn-label">Sign out</span></button>
     </div>
   </div>
-
-  <!-- MAIN -->
   <div class="main">
-    ${S.studentId ? rStudentDetail() : S.section==='pending' ? rPending() : rStudents()}
+    ${S.studentId?rStudent():S.section==='pending'?rPending():rStudents()}
   </div>
-
-  <!-- MODALS -->
-  ${S.approveModal ? rApproveModal() : ''}
-  ${S.classModal ? rClassModal() : ''}
-  ${S.editClassId ? rEditClassModal() : ''}
-  ${S.editSchedUid ? rEditSchedModal() : ''}
-  ${S.noteModal ? rNoteModal() : ''}
-  ${S.settingsModal ? rSettingsModal() : ''}
+  ${S.approveModal?rApproveModal():''}
+  ${S.classModal?rClassModal():''}
+  ${S.editClassId?rEditClassModal():''}
+  ${S.editSchedId?rEditSchedModal():''}
+  ${S.noteModal?rNoteModal():''}
+  ${S.pwModal?rPwModal():''}
   <div class="toast-wrap" id="toast-wrap"></div>
-  </div>`;
-}
+  </div>`;}
 
-// ── PENDING REQUESTS ──────────────────────────────────────────────────
+// ── PENDING ────────────────────────────────────────────────────────────
 function rPending(){
-  const pending = getUsers().filter(u=>u.status==='pending');
-  return `<div>
-  <p class="page-title">Sign-up Requests</p>
-  <p class="page-sub">Review and approve new parent registrations</p>
-  ${pending.length===0
-    ?`<div class="empty"><div class="ei">✅</div><p>No pending requests. All caught up!</p></div>`
-    :pending.map(u=>`<div class="card">
-      <div class="card-row">
-        <div class="card-info">
-          <h4>${u.name}</h4>
-          <p>👤 Student: <strong>${u.studentName}</strong></p>
-          <p>📱 ${u.phone}</p>
-          <p style="font-size:12px;color:var(--text-3);margin-top:4px">Registered ${fmtDate(u.createdAt)}</p>
-        </div>
-        <div class="card-actions">
-          <span class="badge bdg-p">Pending</span>
-          <button class="btn btn-p btn-sm" onclick="openApproveModal('${u.id}')">✓ Approve</button>
-          <button class="btn btn-red btn-sm" onclick="doReject('${u.id}')">✕ Reject</button>
-        </div>
+  const pending=getUsers().filter(u=>u.status==='pending');
+  return`<div>
+  <div class="page-title">Requests</div>
+  <div class="page-sub">New parent registrations awaiting review</div>
+  ${pending.length===0?`<div class="empty"><p>No pending requests.</p></div>`
+  :pending.map(u=>`<div class="card">
+    <div class="card-row">
+      <div class="card-body">
+        <h4>${u.name}</h4>
+        <p>Student: <strong>${u.studentName}</strong></p>
+        <p>${u.phone}${u.email?` &middot; ${u.email}`:''}</p>
+        <div class="meta">Registered ${fmt(u.createdAt)}</div>
       </div>
-    </div>`).join('')
-  }</div>`;
-}
+      <div class="card-actions">
+        <span class="badge badge-pending">Pending</span>
+        <button class="btn btn-primary" onclick="openApprove('${u.id}')">Approve</button>
+        <button class="btn btn-danger" onclick="doReject('${u.id}')">Reject</button>
+      </div>
+    </div>
+  </div>`).join('')}</div>`;}
 
-// ── APPROVE MODAL ─────────────────────────────────────────────────────
-function openApproveModal(uid){
-  const u = getUsers().find(x=>x.id===uid);
-  S.approveModal = uid;
-  S.af = { totalClassesMonth:'8', schedRows:[{month:'',week:'1',topic:'',type:'New'}], topics:[{name:'',status:'not_started'}] };
+// ── APPROVE MODAL ──────────────────────────────────────────────────────
+function openApprove(uid){
+  S.approveModal=uid;
+  S.af={tcm:'8',rows:[{month:'',week:'1',topic:'',type:'New'}],topics:[{name:'',status:'not_started'}]};
   render();
 }
-
 function rApproveModal(){
-  const u = getUsers().find(x=>x.id===S.approveModal);
-  return `<div class="modal-overlay" onclick="if(event.target===this)closeModals()">
+  const u=getUsers().find(x=>x.id===S.approveModal);
+  return`<div class="overlay" onclick="if(event.target===this)closeModals()">
   <div class="modal">
-    <h3>Approve Request</h3>
-    <p class="modal-sub">Setting up <strong>${u.name}</strong> for <strong>${u.studentName}</strong></p>
-    ${S.error?`<div class="err">${S.error}</div>`:''}
-    
-    <div class="fg">
-      <label>Total Classes per Month</label>
-      <input id="af-tcm" type="number" placeholder="e.g. 8" value="${S.af.totalClassesMonth}" min="1" max="31" />
+    <h3>Approve request</h3>
+    <p class="modal-sub">Setting up <strong>${u.studentName}</strong> for <strong>${u.name}</strong></p>
+    ${S.err?`<div class="alert alert-err">${S.err}</div>`:''}
+    <div class="field"><label>Total classes per month</label>
+    <input id="af-tcm" type="number" placeholder="e.g. 8" value="${S.af.tcm}" min="1" max="31"/></div>
+    <div class="row-between" style="margin-top:16px">
+      <label style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em">Syllabus schedule</label>
+      <button class="btn btn-ghost" onclick="addAFRow()">+ Add row</button>
     </div>
-    
-    <div style="margin-bottom:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <label style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em">Syllabus Schedule (3-month plan)</label>
-        <button class="btn btn-gh btn-sm" onclick="addSchedRow()">+ Add Row</button>
-      </div>
-      <div class="rows-builder">
-        <div class="row-hd"><span>Month</span><span>Week</span><span>Topic</span><span>Type</span><span></span></div>
-        <div id="sched-rows">${S.af.schedRows.map((r,i)=>schedRowHTML(r,i)).join('')}</div>
-      </div>
+    <div class="builder">
+      <div class="builder-head"><span>Month</span><span>Week</span><span>Topic</span><span>Type</span><span></span></div>
+      <div id="af-rows">${S.af.rows.map((r,i)=>afRowHTML(r,i)).join('')}</div>
     </div>
-    
-    <div style="margin-bottom:8px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <label style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em">Topics List (one-time)</label>
-        <button class="btn btn-gh btn-sm" onclick="addTopicRow()">+ Add Topic</button>
-      </div>
-      <div class="topics-list" id="topics-list">${S.af.topics.map((t,i)=>topicRowHTML(t,i)).join('')}</div>
+    <div class="row-between" style="margin-top:16px">
+      <label style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em">Topics list</label>
+      <button class="btn btn-ghost" onclick="addAFTopic()">+ Add topic</button>
     </div>
-    
-    <div class="modal-footer">
-      <button class="btn btn-gh" onclick="closeModals()">Cancel</button>
-      <button class="btn btn-p" onclick="doApprove()">✓ Approve & Activate</button>
+    <div class="topic-builder" id="af-topics">${S.af.topics.map((t,i)=>afTopicHTML(t,i)).join('')}</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-primary" onclick="doApprove()">Approve & activate</button>
     </div>
-  </div></div>`;
-}
+  </div></div>`;}
 
-function schedRowHTML(r,i){
-  return `<div class="rb-row" id="sr-${i}">
-    <input placeholder="Apr 2025" value="${r.month||''}" oninput="updateSchedRow(${i},'month',this.value)" />
-    <input type="number" placeholder="1" min="1" max="4" value="${r.week||''}" oninput="updateSchedRow(${i},'week',this.value)" />
-    <input placeholder="Fractions & Decimals" value="${r.topic||''}" oninput="updateSchedRow(${i},'topic',this.value)" />
-    <select onchange="updateSchedRow(${i},'type',this.value)">
-      ${['New','Revision','Test','Mixed'].map(t=>`<option ${r.type===t?'selected':''}>${t}</option>`).join('')}
-    </select>
-    <button class="rb-del" onclick="delSchedRow(${i})">✕</button>
-  </div>`;
-}
+function afRowHTML(r,i){return`<div class="builder-row">
+  <input placeholder="Apr 2025" value="${r.month||''}" oninput="S.af.rows[${i}].month=this.value"/>
+  <input type="number" placeholder="1" min="1" max="4" value="${r.week||''}" oninput="S.af.rows[${i}].week=this.value"/>
+  <input placeholder="Topic" value="${r.topic||''}" oninput="S.af.rows[${i}].topic=this.value"/>
+  <select onchange="S.af.rows[${i}].type=this.value">${['New','Revision','Test','Mixed'].map(t=>`<option ${r.type===t?'selected':''}>${t}</option>`).join('')}</select>
+  <button class="del-btn" onclick="S.af.rows.splice(${i},1);reRender('af-rows',()=>S.af.rows.map((r,i)=>afRowHTML(r,i)).join(''))">✕</button>
+</div>`;}
 
-function topicRowHTML(t,i){
-  return `<div class="topic-row" id="tr-${i}">
-    <input placeholder="Topic name, e.g. Linear Equations" value="${t.name||''}" oninput="updateTopicRow(${i},'name',this.value)" />
-    <select class="topic-status-sel" onchange="updateTopicRow(${i},'status',this.value)">
-      <option value="not_started" ${t.status==='not_started'?'selected':''}>Not Started</option>
-      <option value="ongoing" ${t.status==='ongoing'?'selected':''}>Ongoing</option>
-      <option value="completed" ${t.status==='completed'?'selected':''}>Completed</option>
-    </select>
-    <button class="rb-del" onclick="delTopicRow(${i})">✕</button>
-  </div>`;
-}
+function afTopicHTML(t,i){return`<div class="topic-row">
+  <input placeholder="Topic name" value="${t.name||''}" oninput="S.af.topics[${i}].name=this.value"/>
+  <select onchange="S.af.topics[${i}].status=this.value">
+    ${['not_started','ongoing','completed'].map(s=>`<option value="${s}" ${t.status===s?'selected':''}>${s==='not_started'?'Not started':s==='ongoing'?'Ongoing':'Completed'}</option>`).join('')}
+  </select>
+  <button class="del-btn" onclick="S.af.topics.splice(${i},1);reRender('af-topics',()=>S.af.topics.map((t,i)=>afTopicHTML(t,i)).join(''))">✕</button>
+</div>`;}
 
-function syncAfFromDOM(){
-  S.af.totalClassesMonth = $('af-tcm') ? $('af-tcm').value : S.af.totalClassesMonth;
-}
-
-function addSchedRow(){ syncAfFromDOM(); S.af.schedRows.push({month:'',week:'',topic:'',type:'New'}); rerenderApproveModal(); }
-function delSchedRow(i){ syncAfFromDOM(); S.af.schedRows.splice(i,1); rerenderApproveModal(); }
-function updateSchedRow(i,k,v){ if(S.af.schedRows[i]) S.af.schedRows[i][k]=v; }
-function addTopicRow(){ syncAfFromDOM(); S.af.topics.push({name:'',status:'not_started'}); rerenderApproveModal(); }
-function delTopicRow(i){ syncAfFromDOM(); S.af.topics.splice(i,1); rerenderApproveModal(); }
-function updateTopicRow(i,k,v){ if(S.af.topics[i]) S.af.topics[i][k]=v; }
-
-function rerenderApproveModal(){
-  S.af.totalClassesMonth = $('af-tcm') ? $('af-tcm').value : S.af.totalClassesMonth;
-  const sr=$('sched-rows'); if(sr) sr.innerHTML=S.af.schedRows.map((r,i)=>schedRowHTML(r,i)).join('');
-  const tl=$('topics-list'); if(tl) tl.innerHTML=S.af.topics.map((t,i)=>topicRowHTML(t,i)).join('');
-}
+function addAFRow(){const tcm=$('af-tcm');if(tcm)S.af.tcm=tcm.value;S.af.rows.push({month:'',week:'1',topic:'',type:'New'});reRender('af-rows',()=>S.af.rows.map((r,i)=>afRowHTML(r,i)).join(''));}
+function addAFTopic(){S.af.topics.push({name:'',status:'not_started'});reRender('af-topics',()=>S.af.topics.map((t,i)=>afTopicHTML(t,i)).join(''));}
+function reRender(id,fn){const el=$(id);if(el)el.innerHTML=fn();}
 
 function doApprove(){
-  syncAfFromDOM();
-  const tcm = parseInt(S.af.totalClassesMonth);
-  if(!tcm||tcm<1) { S.error='Please set total classes per month.'; render(); return; }
-  const topics = S.af.topics.filter(t=>t.name.trim());
-  const schedRows = S.af.schedRows.filter(r=>r.month&&r.topic);
-  const users = getUsers();
-  const idx = users.findIndex(u=>u.id===S.approveModal);
-  users[idx].status='approved';
-  users[idx].totalClassesMonth=tcm;
-  users[idx].syllabusSchedule=schedRows;
-  users[idx].syllabusTopics=topics.map(t=>({name:t.name.trim(),status:t.status}));
-  saveUsers(users);
-  closeModals();
-  S.info=`${users[idx].name} approved! They can now log in.`;
-  render();
+  const tcm=parseInt($('af-tcm')?$('af-tcm').value:S.af.tcm);
+  if(!tcm||tcm<1){S.err='Please set total classes per month.';render();return;}
+  const all=getUsers(),i=all.findIndex(u=>u.id===S.approveModal);
+  all[i].status='approved';all[i].totalClassesMonth=tcm;
+  all[i].syllabusSchedule=S.af.rows.filter(r=>r.month&&r.topic);
+  all[i].syllabusTopics=S.af.topics.filter(t=>t.name.trim()).map(t=>({name:t.name.trim(),status:t.status}));
+  saveUsers(all);closeModals();showToast('Approved','Student portal is now active for '+all[i].name+'.');render();
 }
-
 function doReject(uid){
-  if(!confirm('Reject this sign-up request?')) return;
-  const users=getUsers(), idx=users.findIndex(u=>u.id===uid);
-  users[idx].status='rejected'; saveUsers(users); render();
+  if(!confirm('Reject this request?'))return;
+  const all=getUsers(),i=all.findIndex(u=>u.id===uid);
+  all[i].status='rejected';saveUsers(all);render();
 }
 
-// ── STUDENTS ──────────────────────────────────────────────────────────
+// ── STUDENTS ───────────────────────────────────────────────────────────
 function rStudents(){
-  const students = getUsers().filter(u=>u.status==='approved');
-  return `<div>
-  <p class="page-title">Students</p>
-  <p class="page-sub">All approved students</p>
-  ${students.length===0
-    ?`<div class="empty"><div class="ei">👨‍🎓</div><p>No approved students yet. Approve a request first.</p></div>`
-    :students.map(u=>{
-      const cls = getClasses(u.id);
-      const now=new Date();
-      const thisMonth=cls.filter(c=>{const d=new Date(c.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).length;
-      const completed=(u.syllabusTopics||[]).filter(t=>t.status==='completed').length;
-      return `<div class="card" style="cursor:pointer" onclick="openStudent('${u.id}')">
-        <div class="card-row">
-          <div class="card-info">
-            <h4>${u.studentName}</h4>
-            <p style="color:var(--text-2);font-size:13px">Parent: ${u.name} · 📱 ${u.phone}</p>
-            <div style="display:flex;gap:14px;margin-top:8px;flex-wrap:wrap">
-              <span style="font-size:12px;color:var(--text-3)">📅 ${thisMonth}/${u.totalClassesMonth} classes this month</span>
-              <span style="font-size:12px;color:var(--text-3)">📋 ${completed}/${(u.syllabusTopics||[]).length} topics done</span>
-            </div>
-          </div>
-          <div class="card-actions"><button class="btn btn-gh btn-sm">View →</button></div>
+  const students=getUsers().filter(u=>u.status==='approved');
+  return`<div>
+  <div class="page-title">Students</div>
+  <div class="page-sub">All active students</div>
+  ${students.length===0?`<div class="empty"><p>No students yet. Approve a request first.</p></div>`
+  :students.map(u=>{
+    const cls=getClasses(u.id),now=new Date();
+    const ctm=cls.filter(c=>{const d=new Date(c.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).length;
+    const done=(u.syllabusTopics||[]).filter(t=>t.status==='completed').length;
+    return`<div class="card" style="cursor:pointer" onclick="openStudent('${u.id}')">
+      <div class="card-row">
+        <div class="card-body">
+          <h4>${u.studentName}</h4>
+          <p>${u.name} &middot; ${u.phone}</p>
+          <div class="meta">${ctm}/${u.totalClassesMonth} classes this month &nbsp;&middot;&nbsp; ${done}/${(u.syllabusTopics||[]).length} topics done</div>
         </div>
-      </div>`;
-    }).join('')
-  }</div>`;
-}
+        <div class="card-actions"><button class="btn btn-ghost">View</button></div>
+      </div>
+    </div>`;}).join('')}</div>`;}
 
-// ── STUDENT DETAIL ────────────────────────────────────────────────────
-function openStudent(id){ S.studentId=id; S.section='students'; render(); }
+// ── STUDENT DETAIL ─────────────────────────────────────────────────────
+function openStudent(id){S.studentId=id;S.section='students';render();}
+function rStudent(){
+  const u=getUsers().find(x=>x.id===S.studentId);if(!u)return'';
+  const cls=getClasses(u.id),n=getNote(u.id),now=new Date();
+  const ctm=cls.filter(c=>{const d=new Date(c.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).length;
+  const done=(u.syllabusTopics||[]).filter(t=>t.status==='completed').length;
 
-function rStudentDetail(){
-  const u = getUsers().find(x=>x.id===S.studentId); if(!u) return '';
-  const cls = getClasses(u.id);
-  const note = getNote(u.id);
-  const now=new Date();
-  const thisMonth=cls.filter(c=>{const d=new Date(c.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear()}).length;
-  const completed=(u.syllabusTopics||[]).filter(t=>t.status==='completed').length;
-
-  return `<div>
-  <button class="back-btn" onclick="S.studentId=null;render()">← Back to Students</button>
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
-    <div>
-      <p class="page-title">${u.studentName}</p>
-      <p class="page-sub">Parent: ${u.name} · 📱 ${u.phone}</p>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-accent btn-sm" onclick="openNoteModal('${u.id}')">📝 Teacher's Note</button>
-      <button class="btn btn-p btn-sm" onclick="openClassModal('${u.id}')">+ Log Class</button>
+  return`<div>
+  <button class="back-btn" onclick="S.studentId=null;render()">← Students</button>
+  <div class="row-between" style="margin-bottom:20px">
+    <div><div class="page-title" style="margin-bottom:2px">${u.studentName}</div>
+    <div style="font-size:13px;color:var(--text-2)">${u.name} &middot; ${u.phone}</div></div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <button class="btn btn-warn" onclick="openNote('${u.id}')">Teacher's note</button>
+      <button class="btn btn-primary" onclick="openClass('${u.id}')">Log class</button>
     </div>
   </div>
 
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat-mini"><div class="lbl">Classes this month</div><div class="val">${thisMonth}<span style="font-size:16px;color:var(--text-3)">/${u.totalClassesMonth}</span></div></div>
-    <div class="stat-mini"><div class="lbl">Total classes</div><div class="val">${cls.length}</div></div>
-    <div class="stat-mini"><div class="lbl">Topics done</div><div class="val">${completed}<span style="font-size:16px;color:var(--text-3)">/${(u.syllabusTopics||[]).length}</span></div></div>
-    <div class="stat-mini"><div class="lbl">Total classes/mo</div><div class="val" style="font-size:20px">${u.totalClassesMonth}</div><div class="sub" style="cursor:pointer;color:var(--primary);text-decoration:underline" onclick="editTotalClasses('${u.id}')">Edit</div></div>
+  <div class="stats-grid">
+    <div class="stat-box"><div class="sl">This month</div><div class="sv">${ctm}<span style="font-size:14px;color:var(--text-3)"> / ${u.totalClassesMonth}</span></div></div>
+    <div class="stat-box"><div class="sl">Total classes</div><div class="sv">${cls.length}</div></div>
+    <div class="stat-box"><div class="sl">Topics done</div><div class="sv">${done}<span style="font-size:14px;color:var(--text-3)"> / ${(u.syllabusTopics||[]).length}</span></div></div>
+    <div class="stat-box"><div class="sl">Per month</div><div class="sv" style="font-size:18px">${u.totalClassesMonth}</div><div class="ss"><a onclick="editTCM('${u.id}')">Edit</a></div></div>
   </div>
 
-  <!-- Parent Credentials -->
-  <div class="card" style="margin-bottom:24px;border-left:3px solid var(--accent)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-      <strong style="font-size:14px">🔐 Parent Credentials</strong>
-      <span style="font-size:11px;color:var(--text-3)">Admin only</span>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
-      <div><div style="color:var(--text-3);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Login Name</div><div style="font-weight:600">${u.name}</div></div>
-      <div><div style="color:var(--text-3);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Email</div><div style="font-weight:600">${u.email||'—'}</div></div>
-      <div><div style="color:var(--text-3);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Phone</div><div style="font-weight:600">${u.phone}</div></div>
-      <div><div style="color:var(--text-3);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Password</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span id="pw-reveal" style="font-weight:600;font-family:monospace;letter-spacing:.05em">••••••••</span>
-          <button onclick="togglePwReveal('${u.password}')" style="background:none;border:none;cursor:pointer;color:var(--primary);font-size:12px;font-family:var(--ff-b);font-weight:600;padding:0">Show</button>
+  <div class="cred-card">
+    <div style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Parent credentials <span style="font-size:10px;color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0">— admin only</span></div>
+    <div class="cred-grid">
+      <div class="cred-item"><div class="cl">Login name</div><div class="cv">${u.name}</div></div>
+      <div class="cred-item"><div class="cl">Email</div><div class="cv" style="font-size:12px">${u.email||'—'}</div></div>
+      <div class="cred-item"><div class="cl">Phone</div><div class="cv">${u.phone}</div></div>
+      <div class="cred-item"><div class="cl">Password</div>
+        <div style="display:flex;align-items:center">
+          <span id="pw-reveal" class="cv">••••••••</span>
+          <button class="reveal-btn" onclick="toggleReveal('${u.password}')">Show</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Current Note -->
-  ${note?`<div class="card" style="margin-bottom:24px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <strong style="font-size:14px">📝 Current Teacher's Note</strong>
-      <span style="font-size:12px;color:var(--text-3)">${note.weekOf?`Week of ${fmtDate(note.weekOf)}`:''}</span>
+  ${n?`<div class="card" style="margin-bottom:20px">
+    <div class="row-between" style="margin-bottom:8px">
+      <div style="font-size:13px;font-weight:600">Teacher's note</div>
+      <div style="font-size:11px;color:var(--text-3)">${n.weekOf?`Week of ${fmt(n.weekOf)}`:''}</div>
     </div>
-    <p class="note-preview">${note.note}</p>
-    <button class="btn btn-gh btn-sm" onclick="openNoteModal('${u.id}')">Edit Note</button>
+    <div class="note-preview">${n.note}</div>
+    <button class="btn btn-ghost" onclick="openNote('${u.id}')">Edit</button>
   </div>`:''}
 
-  <!-- Classes Table -->
-  <p class="section-title">Classes Log</p>
-  ${cls.length===0?`<div class="empty" style="padding:32px 24px"><div class="ei">📚</div><p>No classes logged yet.</p></div>`
-  :`<div class="tbl-wrap"><table>
-    <thead><tr><th>Date</th><th>Topic Covered</th><th>Homework Assigned</th><th>HW Done?</th><th>Actions</th></tr></thead>
+  <div class="section-title">Classes</div>
+  ${cls.length===0?`<div class="empty"><p>No classes logged yet.</p></div>`
+  :`<div class="table-wrap"><table>
+    <thead><tr><th>Date</th><th>Topic</th><th>Homework</th><th>HW done</th><th>Actions</th></tr></thead>
     <tbody>${cls.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(c=>`<tr>
-      <td style="white-space:nowrap">${fmtDate(c.date)}</td>
+      <td style="white-space:nowrap">${fmt(c.date)}</td>
       <td>${c.topic}</td>
       <td>${c.homework||'—'}</td>
-      <td>
-        <button onclick="toggleHW('${c.id}')" class="badge ${c.hwDone?'bdg-g':'bdg-y'}" style="cursor:pointer;border:none">
-          ${c.hwDone?'✓ Done':'⏳ Pending'}
-        </button>
-      </td>
+      <td><button onclick="toggleHW('${c.id}')" class="badge ${c.hwDone?'badge-green':'badge-amber'}" style="cursor:pointer;border:none;font-family:var(--ff-b)">${c.hwDone?'Done':'Pending'}</button></td>
       <td><div class="td-actions">
-        <button class="btn btn-gh btn-sm" onclick="openEditClassModal('${c.id}')">✏️ Edit</button>
-        <button class="btn btn-red btn-sm" onclick="delClass('${c.id}')">Delete</button>
+        <button class="btn btn-ghost" onclick="openEditClass('${c.id}')">Edit</button>
+        <button class="btn btn-danger" onclick="delClass('${c.id}')">Delete</button>
       </div></td>
     </tr>`).join('')}</tbody>
   </table></div>`}
 
-  <!-- Syllabus Schedule -->
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:28px;margin-bottom:14px">
-    <p class="section-title" style="margin:0">Syllabus Schedule</p>
-    <button class="btn btn-gh btn-sm" onclick="openEditSchedModal('${u.id}')">✏️ Edit Schedule</button>
+  <div class="row-between" style="margin-top:4px">
+    <div class="section-title" style="margin:0">Syllabus schedule</div>
+    <button class="btn btn-ghost" onclick="openEditSched('${u.id}')">Edit schedule</button>
   </div>
-  ${(u.syllabusSchedule&&u.syllabusSchedule.length>0)?`
-  <div class="tbl-wrap"><table>
+  <div style="margin-top:12px"></div>
+  ${(u.syllabusSchedule&&u.syllabusSchedule.length)?`
+  <div class="table-wrap"><table>
     <thead><tr><th>Month</th><th>Week</th><th>Topic</th><th>Type</th></tr></thead>
     <tbody>${u.syllabusSchedule.map(s=>`<tr>
-      <td>${s.month}</td><td>Week ${s.week}</td><td>${s.topic}</td>
-      <td><span class="badge bdg-y">${s.type}</span></td>
+      <td style="white-space:nowrap">${s.month}</td><td>Wk ${s.week}</td>
+      <td>${s.topic}</td><td><span class="badge badge-amber">${s.type}</span></td>
     </tr>`).join('')}</tbody>
-  </table></div>`:`<div class="empty" style="padding:24px"><div class="ei">🗓</div><p>No schedule set. <button class="lnk" onclick="openEditSchedModal('${u.id}')">Add now →</button></p></div>`}
+  </table></div>`:`<div class="empty"><p>No schedule set. <button class="btn btn-ghost" style="margin-top:8px;display:inline-flex" onclick="openEditSched('${u.id}')">Add now</button></p></div>`}
 
-  <!-- Topics Progress -->
-  <p class="section-title" style="margin-top:28px">Topics Progress</p>
-  ${(u.syllabusTopics&&u.syllabusTopics.length>0)?`
-  <div class="tbl-wrap"><table>
+  <div class="section-title">Topics progress</div>
+  ${(u.syllabusTopics&&u.syllabusTopics.length)?`
+  <div class="table-wrap"><table>
     <thead><tr><th>Topic</th><th>Status</th></tr></thead>
     <tbody>${u.syllabusTopics.map((t,i)=>`<tr>
       <td>${t.name}</td>
-      <td>
-        <div class="status-toggle">
-          <button class="st-btn ${t.status==='completed'?'active-completed':''}" onclick="setTopicStatus('${u.id}',${i},'completed')">✓ Done</button>
-          <button class="st-btn ${t.status==='ongoing'?'active-ongoing':''}" onclick="setTopicStatus('${u.id}',${i},'ongoing')">● Ongoing</button>
-          <button class="st-btn ${t.status==='not_started'?'active-not':''}" onclick="setTopicStatus('${u.id}',${i},'not_started')">○ Not Yet</button>
-        </div>
-      </td>
+      <td><div class="status-toggle">
+        <button class="stbtn ${t.status==='completed'?'s-done':''}" onclick="setStatus('${u.id}',${i},'completed')">Done</button>
+        <button class="stbtn ${t.status==='ongoing'?'s-ongoing':''}" onclick="setStatus('${u.id}',${i},'ongoing')">Ongoing</button>
+        <button class="stbtn ${t.status==='not_started'?'s-not':''}" onclick="setStatus('${u.id}',${i},'not_started')">Not yet</button>
+      </div></td>
     </tr>`).join('')}</tbody>
-  </table></div>`:`<div class="empty" style="padding:24px"><div class="ei">📋</div><p>No topics set.</p></div>`}
-  </div>`;
-}
+  </table></div>`:`<div class="empty"><p>No topics set.</p></div>`}
+  </div>`;}
 
-// ── EDIT CLASS MODAL ──────────────────────────────────────────────────
-function openEditClassModal(classId){
-  S.editClassId = classId; S.classModal = null; render();
-}
-
-function rEditClassModal(){
-  const c = getAllClasses().find(x=>x.id===S.editClassId); if(!c) return '';
-  return `<div class="modal-overlay" onclick="if(event.target===this)closeModals()">
-  <div class="modal">
-    <h3>Edit Class Entry</h3>
-    <p class="modal-sub">${fmtDate(c.date)}</p>
-    ${S.error?`<div class="err">${S.error}</div>`:''}
-    <div class="fg"><label>Date *</label><input id="ec-date" type="date" value="${c.date}" /></div>
-    <div class="fg"><label>Topic Covered *</label><input id="ec-topic" type="text" value="${c.topic}" /></div>
-    <div class="fg"><label>Homework Assigned</label><input id="ec-hw" type="text" value="${c.homework||''}" /></div>
-    <div class="fg" style="display:flex;align-items:center;gap:12px">
-      <input id="ec-done" type="checkbox" style="width:18px;height:18px;cursor:pointer;accent-color:var(--primary)" ${c.hwDone?'checked':''}/>
-      <label for="ec-done" style="font-size:14px;color:var(--text);cursor:pointer;text-transform:none;letter-spacing:0">Homework done</label>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-gh" onclick="closeModals()">Cancel</button>
-      <button class="btn btn-p" onclick="doEditClass()">Save Changes</button>
-    </div>
-  </div></div>`;
-}
-
-function doEditClass(){
-  const date=$('ec-date').value, topic=$('ec-topic').value.trim();
-  if(!date||!topic){S.error='Date and topic are required.';render();return;}
-  const all=getAllClasses(), idx=all.findIndex(c=>c.id===S.editClassId);
-  all[idx]={...all[idx], date, topic, homework:$('ec-hw').value.trim(), hwDone:$('ec-done').checked};
-  saveClasses(all); closeModals(); S.info='Class updated!'; render();
-}
-
-// ── EDIT SCHEDULE MODAL ───────────────────────────────────────────────
-function openEditSchedModal(uid){
-  const u=getUsers().find(x=>x.id===uid);
-  S.editSchedUid=uid;
-  S.editSchedRows=(u.syllabusSchedule&&u.syllabusSchedule.length>0)
-    ?JSON.parse(JSON.stringify(u.syllabusSchedule))
-    :[{month:'',week:'1',topic:'',type:'New'}];
-  render();
-}
-
-function rEditSchedModal(){
-  const u=getUsers().find(x=>x.id===S.editSchedUid); if(!u) return '';
-  return `<div class="modal-overlay" onclick="if(event.target===this)closeModals()">
-  <div class="modal" style="max-width:640px">
-    <h3>Edit Syllabus Schedule</h3>
-    <p class="modal-sub">For <strong>${u.studentName}</strong></p>
-    ${S.error?`<div class="err">${S.error}</div>`:''}
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <label style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em">Schedule Rows</label>
-      <button class="btn btn-gh btn-sm" onclick="addEditSchedRow()">+ Add Row</button>
-    </div>
-    <div class="rows-builder">
-      <div class="row-hd"><span>Month</span><span>Week</span><span>Topic</span><span>Type</span><span></span></div>
-      <div id="edit-sched-rows">${S.editSchedRows.map((r,i)=>editSchedRowHTML(r,i)).join('')}</div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-gh" onclick="closeModals()">Cancel</button>
-      <button class="btn btn-p" onclick="doSaveSched()">Save Schedule</button>
-    </div>
-  </div></div>`;
-}
-
-function editSchedRowHTML(r,i){
-  return `<div class="rb-row">
-    <input placeholder="Apr 2025" value="${r.month||''}" oninput="S.editSchedRows[${i}].month=this.value" />
-    <input type="number" placeholder="1" min="1" max="4" value="${r.week||''}" oninput="S.editSchedRows[${i}].week=this.value" />
-    <input placeholder="Topic" value="${r.topic||''}" oninput="S.editSchedRows[${i}].topic=this.value" />
-    <select onchange="S.editSchedRows[${i}].type=this.value">
-      ${['New','Revision','Test','Mixed'].map(t=>`<option ${r.type===t?'selected':''}>${t}</option>`).join('')}
-    </select>
-    <button class="rb-del" onclick="S.editSchedRows.splice(${i},1);reRenderSchedRows()">✕</button>
-  </div>`;
-}
-
-function addEditSchedRow(){
-  S.editSchedRows.push({month:'',week:'1',topic:'',type:'New'});
-  reRenderSchedRows();
-}
-
-function reRenderSchedRows(){
-  const el=$('edit-sched-rows');
-  if(el) el.innerHTML=S.editSchedRows.map((r,i)=>editSchedRowHTML(r,i)).join('');
-}
-
-function doSaveSched(){
-  const rows=S.editSchedRows.filter(r=>r.month&&r.topic);
-  const users=getUsers(), idx=users.findIndex(u=>u.id===S.editSchedUid);
-  users[idx].syllabusSchedule=rows; saveUsers(users);
-  closeModals(); S.info='Syllabus schedule updated!'; render();
-}
-
-// ── PASSWORD REVEAL ────────────────────────────────────────────────────
-let pwRevealed = false;
-function togglePwReveal(pw){
-  const el=$('pw-reveal'), btn=el&&el.nextElementSibling;
-  if(!el) return;
-  pwRevealed=!pwRevealed;
-  el.textContent=pwRevealed?pw:'••••••••';
-  if(btn) btn.textContent=pwRevealed?'Hide':'Show';
-}
-function setTopicStatus(uid, idx, status){
-  const users=getUsers(), uidx=users.findIndex(u=>u.id===uid);
-  users[uidx].syllabusTopics[idx].status=status;
-  saveUsers(users); render();
-}
-
-// ── TOGGLE HW ─────────────────────────────────────────────────────────
-function toggleHW(classId){
-  const all=getAllClasses(), idx=all.findIndex(c=>c.id===classId);
-  all[idx].hwDone=!all[idx].hwDone; saveClasses(all); render();
-}
-
-function delClass(classId){
-  if(!confirm('Delete this class entry?')) return;
-  const all=getAllClasses().filter(c=>c.id!==classId); saveClasses(all); render();
-}
-
-// ── LOG CLASS MODAL ───────────────────────────────────────────────────
-function openClassModal(uid){ S.classModal=uid; render(); }
-
+// ── LOG CLASS MODAL ────────────────────────────────────────────────────
+function openClass(uid){S.classModal=uid;render();}
 function rClassModal(){
   const u=getUsers().find(x=>x.id===S.classModal);
   const today=new Date().toISOString().split('T')[0];
-  return `<div class="modal-overlay" onclick="if(event.target===this)closeModals()">
+  return`<div class="overlay" onclick="if(event.target===this)closeModals()">
   <div class="modal">
-    <h3>Log Class</h3>
-    <p class="modal-sub">Recording session for <strong>${u.studentName}</strong></p>
-    ${S.error?`<div class="err">${S.error}</div>`:''}
-    <div class="fg"><label>Date *</label><input id="cl-date" type="date" value="${today}" /></div>
-    <div class="fg"><label>Topic Covered *</label><input id="cl-topic" type="text" placeholder="e.g. Linear Equations - Introduction" /></div>
-    <div class="fg"><label>Homework Assigned</label><input id="cl-hw" type="text" placeholder="e.g. Ex 4.1 Q1-10 (optional)" /></div>
-    <div class="fg" style="display:flex;align-items:center;gap:12px;margin-top:4px">
-      <input id="cl-done" type="checkbox" style="width:18px;height:18px;cursor:pointer;accent-color:var(--primary)" />
-      <label for="cl-done" style="font-size:14px;color:var(--text);cursor:pointer;text-transform:none;letter-spacing:0">Homework already done / marked done</label>
+    <h3>Log class</h3><p class="modal-sub">${u.studentName}</p>
+    ${S.err?`<div class="alert alert-err">${S.err}</div>`:''}
+    <div class="field"><label>Date</label><input id="cl-d" type="date" value="${today}"/></div>
+    <div class="field"><label>Topic covered</label><input id="cl-t" type="text" placeholder="e.g. Linear Equations — Introduction"/></div>
+    <div class="field"><label>Homework assigned</label><input id="cl-h" type="text" placeholder="Optional"/></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+      <input id="cl-done" type="checkbox" style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary)"/>
+      <label for="cl-done" style="font-size:13px;cursor:pointer;color:var(--text)">Homework already done</label>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-gh" onclick="closeModals()">Cancel</button>
-      <button class="btn btn-p" onclick="doLogClass()">Save Class →</button>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-primary" onclick="doLogClass()">Save</button>
     </div>
-  </div></div>`;
-}
+  </div></div>`;}
 
 function doLogClass(){
-  const date=$('cl-date').value, topic=$('cl-topic').value.trim();
-  const hw=$('cl-hw').value.trim(), done=$('cl-done').checked;
-  if(!date||!topic){ S.error='Date and topic are required.'; render(); return; }
-  const newClass={ id:Date.now().toString(), userId:S.classModal, date, topic, homework:hw, hwDone:done };
-  const all=getAllClasses(); all.push(newClass); saveClasses(all);
-  closeModals(); S.info='Class logged successfully!'; render();
+  const d=$('cl-d').value,t=$('cl-t').value.trim();
+  if(!d||!t){S.err='Date and topic are required.';render();return;}
+  const nc={id:Date.now().toString(),userId:S.classModal,date:d,topic:t,homework:$('cl-h').value.trim(),hwDone:$('cl-done').checked};
+  const all=allClasses();all.push(nc);saveClasses(all);closeModals();showToast('Class logged','Session saved successfully.');render();
 }
 
-// ── TEACHER NOTE MODAL ────────────────────────────────────────────────
-function openNoteModal(uid){ S.noteModal=uid; render(); }
+// ── EDIT CLASS MODAL ───────────────────────────────────────────────────
+function openEditClass(id){S.editClassId=id;S.classModal=null;render();}
+function rEditClassModal(){
+  const c=allClasses().find(x=>x.id===S.editClassId);if(!c)return'';
+  return`<div class="overlay" onclick="if(event.target===this)closeModals()">
+  <div class="modal">
+    <h3>Edit class</h3><p class="modal-sub">${fmt(c.date)}</p>
+    ${S.err?`<div class="alert alert-err">${S.err}</div>`:''}
+    <div class="field"><label>Date</label><input id="ec-d" type="date" value="${c.date}"/></div>
+    <div class="field"><label>Topic covered</label><input id="ec-t" type="text" value="${c.topic}"/></div>
+    <div class="field"><label>Homework assigned</label><input id="ec-h" type="text" value="${c.homework||''}"/></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+      <input id="ec-done" type="checkbox" style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary)" ${c.hwDone?'checked':''}/>
+      <label for="ec-done" style="font-size:13px;cursor:pointer;color:var(--text)">Homework done</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-primary" onclick="doEditClass()">Save changes</button>
+    </div>
+  </div></div>`;}
 
+function doEditClass(){
+  const d=$('ec-d').value,t=$('ec-t').value.trim();
+  if(!d||!t){S.err='Date and topic are required.';render();return;}
+  const all=allClasses(),i=all.findIndex(c=>c.id===S.editClassId);
+  all[i]={...all[i],date:d,topic:t,homework:$('ec-h').value.trim(),hwDone:$('ec-done').checked};
+  saveClasses(all);closeModals();showToast('Updated','Class entry saved.');render();
+}
+
+// ── EDIT SCHEDULE MODAL ────────────────────────────────────────────────
+function openEditSched(uid){
+  const u=getUsers().find(x=>x.id===uid);
+  S.editSchedId=uid;
+  S.editRows=u.syllabusSchedule&&u.syllabusSchedule.length?JSON.parse(JSON.stringify(u.syllabusSchedule)):[{month:'',week:'1',topic:'',type:'New'}];
+  render();
+}
+function rEditSchedModal(){
+  const u=getUsers().find(x=>x.id===S.editSchedId);if(!u)return'';
+  return`<div class="overlay" onclick="if(event.target===this)closeModals()">
+  <div class="modal" style="max-width:600px">
+    <h3>Edit syllabus schedule</h3><p class="modal-sub">${u.studentName}</p>
+    <div class="row-between">
+      <label style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em">Schedule rows</label>
+      <button class="btn btn-ghost" onclick="S.editRows.push({month:'',week:'1',topic:'',type:'New'});reRender('er-rows',()=>S.editRows.map((r,i)=>erHTML(r,i)).join(''))">+ Add row</button>
+    </div>
+    <div class="builder" style="margin-top:8px">
+      <div class="builder-head"><span>Month</span><span>Week</span><span>Topic</span><span>Type</span><span></span></div>
+      <div id="er-rows">${S.editRows.map((r,i)=>erHTML(r,i)).join('')}</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-primary" onclick="doSaveSched()">Save schedule</button>
+    </div>
+  </div></div>`;}
+
+function erHTML(r,i){return`<div class="builder-row">
+  <input placeholder="Apr 2025" value="${r.month||''}" oninput="S.editRows[${i}].month=this.value"/>
+  <input type="number" min="1" max="4" value="${r.week||''}" oninput="S.editRows[${i}].week=this.value"/>
+  <input placeholder="Topic" value="${r.topic||''}" oninput="S.editRows[${i}].topic=this.value"/>
+  <select onchange="S.editRows[${i}].type=this.value">${['New','Revision','Test','Mixed'].map(t=>`<option ${r.type===t?'selected':''}>${t}</option>`).join('')}</select>
+  <button class="del-btn" onclick="S.editRows.splice(${i},1);reRender('er-rows',()=>S.editRows.map((r,i)=>erHTML(r,i)).join(''))">✕</button>
+</div>`;}
+
+function doSaveSched(){
+  const all=getUsers(),i=all.findIndex(u=>u.id===S.editSchedId);
+  all[i].syllabusSchedule=S.editRows.filter(r=>r.month&&r.topic);
+  saveUsers(all);closeModals();showToast('Updated','Syllabus schedule saved.');render();
+}
+
+// ── NOTE MODAL ─────────────────────────────────────────────────────────
+function openNote(uid){S.noteModal=uid;render();}
 function rNoteModal(){
   const u=getUsers().find(x=>x.id===S.noteModal);
-  const existing=getNote(u.id);
+  const ex=getNote(u.id);
   const today=new Date().toISOString().split('T')[0];
-  return `<div class="modal-overlay" onclick="if(event.target===this)closeModals()">
+  return`<div class="overlay" onclick="if(event.target===this)closeModals()">
   <div class="modal">
-    <h3>Teacher's Note</h3>
-    <p class="modal-sub">For <strong>${u.studentName}</strong> · visible to parent all week</p>
-    ${S.error?`<div class="err">${S.error}</div>`:''}
-    <div class="fg">
-      <label>Week Starting</label>
-      <input id="nt-week" type="date" value="${existing&&existing.weekOf?existing.weekOf.split('T')[0]:today}" />
+    <h3>Teacher's note</h3><p class="modal-sub">${u.studentName} — visible to parent all week</p>
+    ${S.err?`<div class="alert alert-err">${S.err}</div>`:''}
+    <div class="field"><label>Week starting</label><input id="nt-w" type="date" value="${ex&&ex.weekOf?ex.weekOf.split('T')[0]:today}"/></div>
+    <div class="field"><label>Note</label><textarea id="nt-n" placeholder="Write your note for this week...">${ex?ex.note:''}</textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-primary" onclick="doSaveNote()">Save note</button>
     </div>
-    <div class="fg">
-      <label>Note *</label>
-      <textarea id="nt-note" placeholder="e.g. ${u.studentName} did really well with fractions this week. Please ensure they revise Ex 4.3 before the next class...">${existing?existing.note:''}</textarea>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-gh" onclick="closeModals()">Cancel</button>
-      <button class="btn btn-p" onclick="doSaveNote()">Save Note →</button>
-    </div>
-  </div></div>`;
-}
+  </div></div>`;}
 
 function doSaveNote(){
-  const note=$('nt-note').value.trim(), week=$('nt-week').value;
-  if(!note){ S.error='Please write a note.'; render(); return; }
-  const all=getNotes().filter(n=>n.userId!==S.noteModal);
-  all.push({userId:S.noteModal, note, weekOf:week}); setLS(K.NOTES,all);
-  closeModals(); S.info='Teacher\'s note saved!'; render();
+  const n=$('nt-n').value.trim(),w=$('nt-w').value;
+  if(!n){S.err='Please write a note.';render();return;}
+  const all=notes().filter(x=>x.userId!==S.noteModal);
+  all.push({userId:S.noteModal,note:n,weekOf:w});sl(K.NOTES,all);
+  closeModals();showToast('Note saved','Parents can now see the note.');render();
 }
 
-// ── SETTINGS MODAL ────────────────────────────────────────────────────
-function showSettings(){ S.settingsModal=true; render(); }
-
-function rSettingsModal(){
-  const creds=getAdmCreds();
-  return `<div class="modal-overlay" onclick="if(event.target===this)closeModals()">
+// ── CHANGE PASSWORD MODAL ──────────────────────────────────────────────
+function rPwModal(){
+  const c=getCreds();
+  return`<div class="overlay" onclick="if(event.target===this)closeModals()">
   <div class="modal">
-    <h3>Settings</h3>
-    <p class="modal-sub">Admin account settings</p>
-    ${S.error?`<div class="err">${S.error}</div>`:''}
-    ${S.info?`<div class="succ">${S.info}</div>`:''}
-    <div class="fg"><label>Username</label><input id="set-u" type="text" value="${creds.username}" /></div>
-    <div class="fg"><label>Current Password</label><input id="set-cp" type="password" placeholder="Current password" /></div>
-    <div class="fg"><label>New Password</label><input id="set-np" type="password" placeholder="New password (leave blank to keep)" /></div>
-    <div class="modal-footer">
-      <button class="btn btn-gh" onclick="closeModals()">Cancel</button>
-      <button class="btn btn-p" onclick="doSaveSettings()">Save Changes</button>
+    <h3>Change password</h3>
+    ${S.err?`<div class="alert alert-err">${S.err}</div>`:''}
+    ${S.ok?`<div class="alert alert-ok">${S.ok}</div>`:''}
+    <div class="field"><label>Username</label><input id="pw-u" type="text" value="${c.username}"/></div>
+    <div class="field"><label>Current password</label><input id="pw-c" type="password"/></div>
+    <div class="field"><label>New password</label><input id="pw-n" type="password" placeholder="Leave blank to keep current"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-primary" onclick="doSavePw()">Save</button>
     </div>
-  </div></div>`;
+  </div></div>`;}
+
+function doSavePw(){
+  const u=$('pw-u').value.trim(),c=$('pw-c').value,n=$('pw-n').value;
+  const creds=getCreds();
+  if(c!==creds.password){S.err='Current password is incorrect.';render();return;}
+  if(!u){S.err='Username cannot be empty.';render();return;}
+  sl(K.ADM,{username:u,password:n||creds.password});
+  S.ok='Password updated.';S.err='';render();
+  setTimeout(closeModals,1400);
 }
 
-function doSaveSettings(){
-  const cu=$('set-u').value.trim(), cp=$('set-cp').value, np=$('set-np').value;
-  const creds=getAdmCreds();
-  if(cp!==creds.password){ S.error='Current password is incorrect.'; renderSettingsAlerts(); return; }
-  if(!cu){ S.error='Username cannot be empty.'; renderSettingsAlerts(); return; }
-  const updated={username:cu, password:np||creds.password};
-  setLS(K.ADM,updated); S.error=''; S.info='Settings saved!'; renderSettingsAlerts();
-  setTimeout(closeModals, 1500);
+// ── HELPERS ────────────────────────────────────────────────────────────
+function setStatus(uid,idx,status){
+  const all=getUsers(),i=all.findIndex(u=>u.id===uid);
+  all[i].syllabusTopics[idx].status=status;saveUsers(all);render();
+}
+function toggleHW(id){
+  const all=allClasses(),i=all.findIndex(c=>c.id===id);
+  all[i].hwDone=!all[i].hwDone;saveClasses(all);render();
+}
+function delClass(id){
+  if(!confirm('Delete this class entry?'))return;
+  saveClasses(allClasses().filter(c=>c.id!==id));render();
+}
+function editTCM(uid){
+  const all=getUsers(),i=all.findIndex(u=>u.id===uid);
+  const v=prompt('Total classes per month:',all[i].totalClassesMonth);
+  if(v===null)return;const n=parseInt(v);
+  if(!n||n<1){alert('Enter a valid number.');return;}
+  all[i].totalClassesMonth=n;saveUsers(all);render();
+}
+function toggleReveal(pw){
+  const el=$('pw-reveal'),btn=el&&el.nextElementSibling;if(!el)return;
+  const hidden=el.textContent==='••••••••';
+  el.textContent=hidden?pw:'••••••••';
+  if(btn)btn.textContent=hidden?'Hide':'Show';
+}
+function setSection(s){S.section=s;S.studentId=null;S.ok='';render();}
+function closeModals(){S.approveModal=null;S.classModal=null;S.editClassId=null;S.editSchedId=null;S.noteModal=null;S.pwModal=false;S.err='';S.ok='';render();}
+function doLogout(){S.loggedIn=false;render();}
+
+// Toast
+function showToast(title,body){
+  const wrap=$('toast-wrap');if(!wrap)return;
+  const id='t'+Date.now();
+  const el=document.createElement('div');
+  el.className='toast';el.id=id;
+  el.innerHTML=`<div class="toast-title">${title}</div><div class="toast-body">${body}</div>`;
+  wrap.appendChild(el);setTimeout(()=>{const e=$(id);if(e)e.remove();},4000);
 }
 
-function renderSettingsAlerts(){
-  const modal=$('app').querySelector('.modal');
-  modal.querySelectorAll('.err,.succ').forEach(e=>e.remove());
-  if(S.error) modal.insertAdjacentHTML('afterbegin',`<div class="err">${S.error}</div>`);
-  if(S.info) modal.insertAdjacentHTML('afterbegin',`<div class="succ">${S.info}</div>`);
-}
+// Auto-refresh
+let lastPending=0;
+window.addEventListener('storage',e=>{if(e.key===K.USERS&&S.loggedIn){const p=getUsers().filter(u=>u.status==='pending');if(p.length>lastPending){showToast('New request',p[p.length-1].name+' signed up.');if(!S.studentId&&!S.approveModal){S.section='pending';render();}}lastPending=p.length;}});
+setInterval(()=>{if(!S.loggedIn)return;const p=getUsers().filter(u=>u.status==='pending');if(p.length>lastPending){showToast('New request',p[p.length-1].name+' signed up.');lastPending=p.length;if(!S.studentId&&!S.approveModal){S.section='pending';render();}}},10000);
 
-// ── EDIT TOTAL CLASSES ────────────────────────────────────────────────
-function editTotalClasses(uid){
-  const users=getUsers(), idx=users.findIndex(u=>u.id===uid);
-  const val=prompt(`Total classes per month for ${users[idx].studentName}:`, users[idx].totalClassesMonth);
-  if(val===null) return;
-  const n=parseInt(val);
-  if(!n||n<1){ alert('Please enter a valid number.'); return; }
-  users[idx].totalClassesMonth=n; saveUsers(users); render();
-}
-
-// ── MISC ─────────────────────────────────────────────────────────────
-function setSection(s){ S.section=s; S.studentId=null; S.info=''; render(); }
-function closeModals(){ S.approveModal=null; S.classModal=null; S.editClassId=null; S.editSchedUid=null; S.noteModal=null; S.settingsModal=false; S.error=''; S.info=''; render(); }
-function doLogout(){ S.loggedIn=false; render(); }
-
-// ── TOAST ─────────────────────────────────────────────────────────────
-function showToast(icon, title, body, type='') {
-  const wrap = document.getElementById('toast-wrap');
-  if (!wrap) return;
-  const id = 'toast-' + Date.now();
-  const el = document.createElement('div');
-  el.className = `toast ${type}`; el.id = id;
-  el.innerHTML = `<div class="toast-icon">${icon}</div>
-    <div class="toast-body"><strong>${title}</strong><p>${body}</p></div>
-    <button class="toast-close" onclick="dismissToast('${id}')">✕</button>`;
-  wrap.appendChild(el);
-  setTimeout(() => dismissToast(id), 6000);
-}
-
-function dismissToast(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.style.animation = 'slideOut .3s ease forwards';
-  setTimeout(() => el.remove(), 300);
-}
-
-// ── AUTO-REFRESH (localStorage polling) ──────────────────────────────
-let lastKnownPendingCount = 0;
-
-function checkForNewRequests() {
-  if (!S.loggedIn) return;
-  const pending = getUsers().filter(u => u.status === 'pending');
-  if (pending.length > lastKnownPendingCount) {
-    const newest = pending[pending.length - 1];
-    showToast('🔔', 'New Sign-up Request!', `${newest.name} signed up for ${newest.studentName}`, 'new-request');
-    // Auto-switch to pending tab if not in a student detail
-    if (!S.studentId && !S.approveModal && !S.classModal && !S.noteModal) {
-      S.section = 'pending';
-      render();
-    } else {
-      // Just refresh the sidebar badge
-      const badge = document.querySelector('.nav-badge');
-      if (badge) badge.textContent = pending.length;
-    }
-  }
-  lastKnownPendingCount = pending.length;
-}
-
-// Listen for localStorage changes from the parents app (same domain)
-window.addEventListener('storage', (e) => {
-  if (e.key === 'ml_users' && S.loggedIn) {
-    checkForNewRequests();
-  }
-});
-
-// Also poll every 10 seconds as fallback (same tab won't fire storage events)
-setInterval(() => { if (S.loggedIn) checkForNewRequests(); }, 10000);
-
-// Init
 render();
 </script>
 </body>
