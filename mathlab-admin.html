@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Math Lab — Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0C0C0E;--surface:#161618;--surface-alt:#1E1E21;--surface-up:#242428;
+  --bg:#0C0C0E;--surface:#161618;--surface-alt:#1E1E21;
   --text:#FAFAFA;--text-2:#A1A1AA;--text-3:#52525B;
   --primary:#22C55E;--primary-r:34,197,94;--primary-lt:#052E16;--primary-hv:#16A34A;
   --danger:#F87171;--danger-lt:#1C0A0A;
@@ -21,7 +23,7 @@
   --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
 }
 [data-theme="light"]{
-  --bg:#F7F7F6;--surface:#FFFFFF;--surface-alt:#F0EFED;--surface-up:#FFFFFF;
+  --bg:#F7F7F6;--surface:#FFFFFF;--surface-alt:#F0EFED;
   --text:#18181B;--text-2:#71717A;--text-3:#A1A1AA;
   --primary:#166534;--primary-r:22,101,52;--primary-lt:#F0FDF4;--primary-hv:#14532D;
   --danger:#DC2626;--danger-lt:#FEF2F2;
@@ -33,13 +35,28 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:1
 #app{display:contents}
 .app-shell{display:flex;min-height:100dvh}
 
-/* ── SIDEBAR ── */
+/* Spinner */
+.loading-screen{min-height:100dvh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.spinner{width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Login */
+.login-wrap{width:100%;min-height:100dvh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px 28px;width:100%;max-width:360px;box-shadow:var(--shadow-md)}
+@media(max-width:400px){.login-card{padding:28px 22px}}
+.login-brand{text-align:center;margin-bottom:24px}
+.login-mark{width:48px;height:48px;background:var(--primary);border-radius:13px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:22px;color:#0C0C0E;margin-bottom:10px}
+[data-theme="light"] .login-mark{color:#fff}
+.login-brand h1{font-family:var(--ff-d);font-size:22px;margin-bottom:3px}
+.login-brand p{font-size:13px;color:var(--text-2)}
+
+/* Sidebar */
 .sidebar{width:200px;min-height:100dvh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:30}
 .sb-top{padding:20px 14px 12px;border-bottom:1px solid var(--border)}
 .sb-brand{display:flex;align-items:center;gap:9px}
-.sb-mark{width:30px;height:30px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:13px;color:#fff;flex-shrink:0}
-[data-theme="dark"] .sb-mark{color:#0C0C0E}
-.sb-name{font-family:var(--ff-d);font-size:15px;color:var(--text)}
+.sb-mark{width:30px;height:30px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:13px;color:#0C0C0E;flex-shrink:0}
+[data-theme="light"] .sb-mark{color:#fff}
+.sb-name{font-family:var(--ff-d);font-size:15px}
 .sb-sub{font-size:10px;color:var(--text-3);margin-top:1px;letter-spacing:.04em;text-transform:uppercase}
 .sb-nav{flex:1;padding:10px 8px}
 .nav-link{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:var(--radius-xs);cursor:pointer;font-size:13px;font-weight:500;color:var(--text-2);transition:all var(--t);border:none;background:none;width:100%;font-family:var(--ff-b);text-align:left;margin-bottom:1px}
@@ -52,33 +69,21 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:1
 .sb-btn.danger:hover{background:var(--danger-lt);color:var(--danger)}
 @media(max-width:640px){
   .sidebar{width:50px}
-  .sb-name,.sb-sub,.nav-text,.sb-btn-label{display:none}
-  .nav-badge{display:none}
+  .sb-name,.sb-sub,.nav-text,.sb-btn-label,.nav-badge{display:none}
   .sb-top{padding:16px 10px}
   .sb-nav{padding:8px 6px}
   .nav-link{justify-content:center;padding:8px}
   .sb-btn{justify-content:center;padding:8px}
 }
-
-/* ── MAIN ── */
 .main{margin-left:200px;flex:1;padding:28px 24px;min-height:100dvh}
 @media(max-width:640px){.main{margin-left:50px;padding:20px 14px}}
 
-/* ── LOGIN ── */
-.login-wrap{width:100%;min-height:100dvh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
-.login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px 28px;width:100%;max-width:360px;box-shadow:var(--shadow-md)}
-.login-brand{text-align:center;margin-bottom:24px}
-.login-mark{width:48px;height:48px;background:var(--primary);border-radius:13px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:22px;color:#fff;margin-bottom:10px}
-[data-theme="dark"] .login-mark{color:#0C0C0E}
-.login-brand h1{font-family:var(--ff-d);font-size:22px;margin-bottom:3px}
-.login-brand p{font-size:13px;color:var(--text-2)}
-
-/* ── TYPOGRAPHY ── */
+/* Typography */
 .page-title{font-family:var(--ff-d);font-size:22px;margin-bottom:3px}
 .page-sub{font-size:13px;color:var(--text-2);margin-bottom:22px}
-.section-title{font-family:var(--ff-d);font-size:18px;margin:24px 0 14px}
+.section-title{font-family:var(--ff-d);font-size:18px;margin:24px 0 12px}
 
-/* ── FORM ── */
+/* Form */
 .field{margin-bottom:13px}
 .field label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;letter-spacing:.03em}
 .field input,.field textarea,.field select{width:100%;padding:10px 12px;background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius-xs);font-family:var(--ff-b);font-size:14px;color:var(--text);outline:none;transition:border-color var(--t),box-shadow var(--t)}
@@ -86,11 +91,11 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:1
 .field input::placeholder,.field textarea::placeholder{color:var(--text-3)}
 .field textarea{resize:vertical;min-height:90px}
 
-/* ── BUTTONS ── */
+/* Buttons */
 .btn{padding:10px 16px;border:none;border-radius:var(--radius-xs);font-family:var(--ff-b);font-size:13px;font-weight:600;cursor:pointer;transition:all var(--t);display:inline-flex;align-items:center;gap:5px;touch-action:manipulation}
 .btn-full{display:flex;width:100%;justify-content:center;padding:11px 16px;font-size:14px}
-.btn-primary{background:var(--primary);color:#fff}
-[data-theme="dark"] .btn-primary{color:#0C0C0E}
+.btn-primary{background:var(--primary);color:#0C0C0E}
+[data-theme="light"] .btn-primary{color:#fff}
 .btn-primary:hover{background:var(--primary-hv)}
 .btn-primary:disabled{opacity:.55;cursor:not-allowed}
 .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-2)}
@@ -99,30 +104,30 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:1
 .btn-danger:hover{background:var(--danger);color:#fff}
 .btn-warn{background:rgba(var(--primary-r),.1);color:var(--primary);border:1px solid rgba(var(--primary-r),.2)}
 
-/* ── ALERTS ── */
+/* Alerts */
 .alert{border-radius:var(--radius-xs);padding:9px 12px;font-size:13px;margin-bottom:13px;line-height:1.5}
 .alert-err{background:var(--danger-lt);color:var(--danger)}
 .alert-ok{background:var(--primary-lt);color:var(--primary)}
 
-/* ── CARD ── */
+/* Cards */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:10px}
 .card-row{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
 .card-body{flex:1;min-width:0}
-.card-body h4{font-size:14px;font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-body h4{font-size:14px;font-weight:600;margin-bottom:3px}
 .card-body p{font-size:13px;color:var(--text-2);margin-bottom:1px;line-height:1.5}
 .card-body .meta{font-size:11px;color:var(--text-3);margin-top:5px}
 .card-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap}
 
-/* ── BADGES ── */
+/* Badges */
 .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
 .badge-green{background:var(--primary-lt);color:var(--primary)}
 .badge-amber{background:var(--warn-lt);color:var(--warn)}
 .badge-neutral{background:var(--surface-alt);color:var(--text-2);border:1px solid var(--border)}
 .badge-pending{background:rgba(252,211,77,.1);color:var(--warn)}
 
-/* ── TABLE ── */
+/* Table */
 .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);margin-bottom:6px}
-table{width:100%;border-collapse:collapse;font-size:13px;min-width:500px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:460px}
 thead tr{border-bottom:1px solid var(--border)}
 th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);white-space:nowrap;background:var(--surface-alt)}
 td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
@@ -130,31 +135,29 @@ tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--surface-alt)}
 .td-actions{display:flex;gap:6px;flex-wrap:wrap}
 
-/* ── STATS ROW ── */
+/* Stats */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px}
 .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 14px}
 .stat-box .sl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px}
 .stat-box .sv{font-family:var(--ff-d);font-size:22px;color:var(--primary)}
-.stat-box .ss{font-size:11px;color:var(--text-2);margin-top:2px;cursor:pointer}
-.stat-box .ss a{color:var(--primary)}
+.stat-box .ss{font-size:11px;color:var(--text-2);margin-top:2px}
+.stat-box .ss a{color:var(--primary);cursor:pointer}
 
-/* ── CREDENTIALS CARD ── */
+/* Credentials */
 .cred-card{background:var(--surface);border:1px solid var(--border-strong);border-left:3px solid var(--warn);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px}
 .cred-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;margin-top:10px}
 .cred-item .cl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:3px}
-.cred-item .cv{font-weight:600;color:var(--text);font-family:monospace;letter-spacing:.03em}
+.cred-item .cv{font-weight:600;color:var(--text);font-family:monospace;letter-spacing:.03em;font-size:13px}
 .reveal-btn{background:none;border:none;cursor:pointer;color:var(--primary);font-size:12px;font-weight:600;padding:0;font-family:var(--ff-b);margin-left:8px}
 
-/* ── BUILDER (rows) ── */
+/* Builder */
 .builder{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:8px}
-.builder-head{display:grid;grid-template-columns:1fr 70px 2fr 90px 32px;gap:6px;padding:7px 10px;background:var(--surface-alt);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3)}
-.builder-row{display:grid;grid-template-columns:1fr 70px 2fr 90px 32px;gap:6px;padding:6px 10px;border-top:1px solid var(--border)}
+.builder-head{display:grid;grid-template-columns:1fr 60px 2fr 90px 28px;gap:5px;padding:7px 10px;background:var(--surface-alt);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3)}
+.builder-row{display:grid;grid-template-columns:1fr 60px 2fr 90px 28px;gap:5px;padding:6px 10px;border-top:1px solid var(--border)}
 .builder-row input,.builder-row select{background:var(--surface-alt);border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-family:var(--ff-b);font-size:12px;color:var(--text);outline:none;width:100%}
 .builder-row input:focus,.builder-row select:focus{border-color:var(--primary)}
-.del-btn{background:none;border:none;cursor:pointer;color:var(--text-3);font-size:14px;width:100%;height:100%;display:flex;align-items:center;justify-content:center;transition:color var(--t)}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--text-3);font-size:14px;display:flex;align-items:center;justify-content:center;transition:color var(--t);padding:0;width:100%}
 .del-btn:hover{color:var(--danger)}
-
-/* Topic rows */
 .topic-builder{border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:8px}
 .topic-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border)}
 .topic-row:last-child{border-bottom:none}
@@ -169,10 +172,10 @@ tr:hover td{background:var(--surface-alt)}
 .stbtn.s-ongoing{border-color:var(--warn);background:var(--warn-lt);color:var(--warn)}
 .stbtn.s-not{border-color:var(--border-strong);background:var(--surface-alt);color:var(--text-2)}
 
-/* ── NOTE PREVIEW ── */
+/* Note */
 .note-preview{background:var(--surface-alt);border-radius:var(--radius-xs);padding:12px;font-size:13px;color:var(--text-2);line-height:1.65;font-style:italic;margin-bottom:10px}
 
-/* ── MODAL ── */
+/* Modal */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;backdrop-filter:blur(3px)}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:100%;max-width:540px;box-shadow:var(--shadow-md);max-height:90dvh;overflow-y:auto;animation:fadeUp .15s ease}
 .modal h3{font-family:var(--ff-d);font-size:20px;margin-bottom:4px}
@@ -180,63 +183,125 @@ tr:hover td{background:var(--surface-alt)}
 .modal-actions{display:flex;gap:8px;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
 .modal-actions .btn{flex:1;justify-content:center}
 
-/* ── TOAST ── */
+/* Toast */
 .toast-wrap{position:fixed;top:16px;right:16px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;box-shadow:var(--shadow-md);min-width:260px;pointer-events:all;animation:slideIn .2s ease;border-left:3px solid var(--primary)}
+.toast{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;box-shadow:var(--shadow-md);min-width:250px;pointer-events:all;animation:slideIn .2s ease;border-left:3px solid var(--primary)}
 .toast-title{font-size:13px;font-weight:600;margin-bottom:2px}
 .toast-body{font-size:12px;color:var(--text-2)}
 @keyframes slideIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
 
-/* ── MISC ── */
+/* Misc */
 .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text-2);cursor:pointer;margin-bottom:18px;transition:color var(--t);background:none;border:none;font-family:var(--ff-b);padding:0}
 .back-btn:hover{color:var(--primary)}
 .empty{text-align:center;padding:40px 20px;color:var(--text-3)}
 .empty p{font-size:13px;line-height:1.6}
 .row-between{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
-.divider{height:1px;background:var(--border);margin:20px 0}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fade{animation:fadeUp .2s ease}
 </style>
 </head>
 <body>
-<div id="app"></div>
-
+<div id="app"><div class="loading-screen"><div class="spinner"></div></div></div>
 <script>
-const K={USERS:'ml_users',CLASSES:'ml_classes',NOTES:'ml_notes',THEME:'ml_theme',ADM:'ml_adm'};
-const ls=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};
-const sl=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-const getUsers=()=>ls(K.USERS)||[];
-const saveUsers=u=>sl(K.USERS,u);
-const getClasses=uid=>(ls(K.CLASSES)||[]).filter(c=>c.userId===uid);
-const saveClasses=c=>sl(K.CLASSES,c);
-const allClasses=()=>ls(K.CLASSES)||[];
-const notes=()=>ls(K.NOTES)||[];
-const getNote=uid=>notes().find(n=>n.userId===uid)||null;
-const fmt=d=>new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-const $=id=>document.getElementById(id);
-const getCreds=()=>ls(K.ADM)||{username:'ansh',password:'mathlab2026'};
+// ── FIREBASE ───────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyD-8CjgBhhg7idQ67TnoxAZJWodYzsukCw",
+  authDomain: "mathlab-d5d4c.firebaseapp.com",
+  databaseURL: "https://mathlab-d5d4c-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mathlab-d5d4c",
+  storageBucket: "mathlab-d5d4c.firebasestorage.app",
+  messagingSenderId: "506143764338",
+  appId: "1:506143764338:web:197451c10bf8972f53f7eb"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-let theme=localStorage.getItem(K.THEME)||'dark';
-document.documentElement.setAttribute('data-theme',theme);
-function toggleTheme(){
-  theme=theme==='light'?'dark':'light';
-  localStorage.setItem(K.THEME,theme);
-  document.documentElement.setAttribute('data-theme',theme);
+// ── STATE ──────────────────────────────────────────────────────────────
+let S = {
+  loggedIn:false, section:'pending', studentId:null,
+  err:'', ok:'',
+  approveModal:null, classModal:null, editClassId:null, editSchedId:null, noteModal:null, pwModal:false,
+  af:{tcm:'8', rows:[{month:'',week:'1',topic:'',type:'New'}], topics:[{name:'',status:'not_started'}]},
+  editRows:[],
+  allUsers:{}, allClasses:{}, allNotes:{},
+  lastPendingKeys:new Set()
+};
+
+// ── THEME ──────────────────────────────────────────────────────────────
+let theme = localStorage.getItem('ml_theme')||'dark';
+document.documentElement.setAttribute('data-theme', theme);
+function toggleTheme() {
+  theme = theme==='light'?'dark':'light';
+  localStorage.setItem('ml_theme', theme);
+  document.documentElement.setAttribute('data-theme', theme);
   render();
 }
 
-let S={
-  loggedIn:false,section:'pending',studentId:null,
-  err:'',ok:'',
-  approveModal:null,classModal:null,editClassId:null,editSchedId:null,noteModal:null,pwModal:false,
-  af:{tcm:'8',rows:[{month:'',week:'1',topic:'',type:'New'}],topics:[{name:'',status:'not_started'}]},
-  editRows:[],pendingCount:0
-};
+const $ = id => document.getElementById(id);
+const fmt = d => new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+const getCreds = () => { try{return JSON.parse(localStorage.getItem('ml_adm'))||{username:'ansh',password:'mathlab2026'}}catch{return{username:'ansh',password:'mathlab2026'}} };
 
-function render(){$('app').innerHTML=S.loggedIn?rShell():rLogin();}
+// ── DATA HELPERS ───────────────────────────────────────────────────────
+function usersList() {
+  return Object.entries(S.allUsers).map(([id,u])=>({...u,id}));
+}
+function classesList() {
+  return Object.entries(S.allClasses).map(([id,c])=>({...c,id}));
+}
+function classesForUser(uid) {
+  return classesList().filter(c=>c.userId===uid);
+}
+function noteForUser(uid) {
+  return S.allNotes[uid]||null;
+}
+
+// ── FIREBASE LISTENERS ─────────────────────────────────────────────────
+function startListeners() {
+  db.ref('users').on('value', snap => {
+    const data = snap.val()||{};
+    // Detect new pending
+    if (S.loggedIn) {
+      Object.entries(data).forEach(([id,u]) => {
+        if (u.status==='pending' && !S.lastPendingKeys.has(id)) {
+          if (S.lastPendingKeys.size > 0) { // Don't toast on initial load
+            showToast('New request', u.name + ' signed up for ' + u.studentName + '.');
+            if (!S.studentId && !S.approveModal) { S.section='pending'; }
+          }
+          S.lastPendingKeys.add(id);
+        }
+      });
+      // Remove keys for non-pending
+      Object.entries(data).forEach(([id,u]) => {
+        if (u.status!=='pending') S.lastPendingKeys.delete(id);
+      });
+    } else {
+      Object.entries(data).forEach(([id,u]) => { if(u.status==='pending') S.lastPendingKeys.add(id); });
+    }
+    S.allUsers = data;
+    if (S.loggedIn) render();
+  });
+
+  db.ref('classes').on('value', snap => {
+    S.allClasses = snap.val()||{};
+    if (S.loggedIn) render();
+  });
+
+  db.ref('notes').on('value', snap => {
+    S.allNotes = snap.val()||{};
+    if (S.loggedIn) render();
+  });
+}
+
+startListeners();
+
+// ── RENDER ─────────────────────────────────────────────────────────────
+function render() {
+  $('app').innerHTML = S.loggedIn ? rShell() : rLogin();
+}
 
 // ── LOGIN ──────────────────────────────────────────────────────────────
-function rLogin(){return`<div class="login-wrap fade">
+function rLogin() {
+  return `<div class="login-wrap fade">
   <div class="login-card">
     <div class="login-brand">
       <div class="login-mark">∑</div>
@@ -246,22 +311,21 @@ function rLogin(){return`<div class="login-wrap fade">
     <div class="field"><label>Username</label><input id="lu" type="text" value="ansh" autocapitalize="none"/></div>
     <div class="field"><label>Password</label><input id="lp" type="password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
     <button class="btn btn-primary btn-full" onclick="doLogin()" style="margin-top:4px">Sign in</button>
-  </div></div>`;}
+  </div></div>`;
+}
 
-function doLogin(){
-  const u=$('lu').value.trim(),p=$('lp').value;
+function doLogin() {
+  const u=$('lu').value.trim(), p=$('lp').value;
   const c=getCreds();
-  if(u===c.username&&p===c.password){
-    S.loggedIn=true;S.err='';
-    S.pendingCount=getUsers().filter(u=>u.status==='pending').length;
-    render();
-  }else{S.err='Invalid credentials.';render();}
+  if (u===c.username && p===c.password) {
+    S.loggedIn=true; S.err=''; render();
+  } else { S.err='Invalid credentials.'; render(); }
 }
 
 // ── SHELL ──────────────────────────────────────────────────────────────
-function rShell(){
-  const pending=getUsers().filter(u=>u.status==='pending');
-  return`<div class="app-shell fade">
+function rShell() {
+  const pending = usersList().filter(u=>u.status==='pending');
+  return `<div class="app-shell fade">
   <div class="sidebar">
     <div class="sb-top">
       <div class="sb-brand">
@@ -294,12 +358,13 @@ function rShell(){
   ${S.noteModal?rNoteModal():''}
   ${S.pwModal?rPwModal():''}
   <div class="toast-wrap" id="toast-wrap"></div>
-  </div>`;}
+  </div>`;
+}
 
 // ── PENDING ────────────────────────────────────────────────────────────
-function rPending(){
-  const pending=getUsers().filter(u=>u.status==='pending');
-  return`<div>
+function rPending() {
+  const pending = usersList().filter(u=>u.status==='pending');
+  return `<div>
   <div class="page-title">Requests</div>
   <div class="page-sub">New parent registrations awaiting review</div>
   ${pending.length===0?`<div class="empty"><p>No pending requests.</p></div>`
@@ -317,17 +382,19 @@ function rPending(){
         <button class="btn btn-danger" onclick="doReject('${u.id}')">Reject</button>
       </div>
     </div>
-  </div>`).join('')}</div>`;}
+  </div>`).join('')}</div>`;
+}
 
-// ── APPROVE MODAL ──────────────────────────────────────────────────────
-function openApprove(uid){
+// ── APPROVE ────────────────────────────────────────────────────────────
+function openApprove(uid) {
   S.approveModal=uid;
   S.af={tcm:'8',rows:[{month:'',week:'1',topic:'',type:'New'}],topics:[{name:'',status:'not_started'}]};
   render();
 }
-function rApproveModal(){
-  const u=getUsers().find(x=>x.id===S.approveModal);
-  return`<div class="overlay" onclick="if(event.target===this)closeModals()">
+
+function rApproveModal() {
+  const u=S.allUsers[S.approveModal]; if(!u) return '';
+  return `<div class="overlay" onclick="if(event.target===this)closeModals()">
   <div class="modal">
     <h3>Approve request</h3>
     <p class="modal-sub">Setting up <strong>${u.studentName}</strong> for <strong>${u.name}</strong></p>
@@ -351,9 +418,10 @@ function rApproveModal(){
       <button class="btn btn-ghost" onclick="closeModals()">Cancel</button>
       <button class="btn btn-primary" onclick="doApprove()">Approve & activate</button>
     </div>
-  </div></div>`;}
+  </div></div>`;
+}
 
-function afRowHTML(r,i){return`<div class="builder-row">
+function afRowHTML(r,i){return `<div class="builder-row">
   <input placeholder="Apr 2025" value="${r.month||''}" oninput="S.af.rows[${i}].month=this.value"/>
   <input type="number" placeholder="1" min="1" max="4" value="${r.week||''}" oninput="S.af.rows[${i}].week=this.value"/>
   <input placeholder="Topic" value="${r.topic||''}" oninput="S.af.rows[${i}].topic=this.value"/>
@@ -361,7 +429,7 @@ function afRowHTML(r,i){return`<div class="builder-row">
   <button class="del-btn" onclick="S.af.rows.splice(${i},1);reRender('af-rows',()=>S.af.rows.map((r,i)=>afRowHTML(r,i)).join(''))">✕</button>
 </div>`;}
 
-function afTopicHTML(t,i){return`<div class="topic-row">
+function afTopicHTML(t,i){return `<div class="topic-row">
   <input placeholder="Topic name" value="${t.name||''}" oninput="S.af.topics[${i}].name=this.value"/>
   <select onchange="S.af.topics[${i}].status=this.value">
     ${['not_started','ongoing','completed'].map(s=>`<option value="${s}" ${t.status===s?'selected':''}>${s==='not_started'?'Not started':s==='ongoing'?'Ongoing':'Completed'}</option>`).join('')}
@@ -369,37 +437,40 @@ function afTopicHTML(t,i){return`<div class="topic-row">
   <button class="del-btn" onclick="S.af.topics.splice(${i},1);reRender('af-topics',()=>S.af.topics.map((t,i)=>afTopicHTML(t,i)).join(''))">✕</button>
 </div>`;}
 
-function addAFRow(){const tcm=$('af-tcm');if(tcm)S.af.tcm=tcm.value;S.af.rows.push({month:'',week:'1',topic:'',type:'New'});reRender('af-rows',()=>S.af.rows.map((r,i)=>afRowHTML(r,i)).join(''));}
+function addAFRow(){const t=$('af-tcm');if(t)S.af.tcm=t.value;S.af.rows.push({month:'',week:'1',topic:'',type:'New'});reRender('af-rows',()=>S.af.rows.map((r,i)=>afRowHTML(r,i)).join(''));}
 function addAFTopic(){S.af.topics.push({name:'',status:'not_started'});reRender('af-topics',()=>S.af.topics.map((t,i)=>afTopicHTML(t,i)).join(''));}
 function reRender(id,fn){const el=$(id);if(el)el.innerHTML=fn();}
 
-function doApprove(){
+async function doApprove() {
   const tcm=parseInt($('af-tcm')?$('af-tcm').value:S.af.tcm);
   if(!tcm||tcm<1){S.err='Please set total classes per month.';render();return;}
-  const all=getUsers(),i=all.findIndex(u=>u.id===S.approveModal);
-  all[i].status='approved';all[i].totalClassesMonth=tcm;
-  all[i].syllabusSchedule=S.af.rows.filter(r=>r.month&&r.topic);
-  all[i].syllabusTopics=S.af.topics.filter(t=>t.name.trim()).map(t=>({name:t.name.trim(),status:t.status}));
-  saveUsers(all);closeModals();showToast('Approved','Student portal is now active for '+all[i].name+'.');render();
-}
-function doReject(uid){
-  if(!confirm('Reject this request?'))return;
-  const all=getUsers(),i=all.findIndex(u=>u.id===uid);
-  all[i].status='rejected';saveUsers(all);render();
+  const rows=S.af.rows.filter(r=>r.month&&r.topic);
+  const topics=S.af.topics.filter(t=>t.name.trim()).map(t=>({name:t.name.trim(),status:t.status}));
+  const uid=S.approveModal;
+  await db.ref('users/'+uid).update({
+    status:'approved', totalClassesMonth:tcm,
+    syllabusSchedule:rows.length?rows:[], syllabusTopics:topics.length?topics:[]
+  });
+  closeModals(); showToast('Approved','Parent portal is now active for '+S.allUsers[uid].name+'.');
 }
 
-// ── STUDENTS ───────────────────────────────────────────────────────────
-function rStudents(){
-  const students=getUsers().filter(u=>u.status==='approved');
-  return`<div>
+async function doReject(uid) {
+  if(!confirm('Reject this request?')) return;
+  await db.ref('users/'+uid).update({status:'rejected'});
+}
+
+// ── STUDENTS ────────────────────────────────────────────────────────────
+function rStudents() {
+  const students=usersList().filter(u=>u.status==='approved');
+  return `<div>
   <div class="page-title">Students</div>
   <div class="page-sub">All active students</div>
   ${students.length===0?`<div class="empty"><p>No students yet. Approve a request first.</p></div>`
   :students.map(u=>{
-    const cls=getClasses(u.id),now=new Date();
+    const cls=classesForUser(u.id), now=new Date();
     const ctm=cls.filter(c=>{const d=new Date(c.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).length;
     const done=(u.syllabusTopics||[]).filter(t=>t.status==='completed').length;
-    return`<div class="card" style="cursor:pointer" onclick="openStudent('${u.id}')">
+    return `<div class="card" style="cursor:pointer" onclick="openStudent('${u.id}')">
       <div class="card-row">
         <div class="card-body">
           <h4>${u.studentName}</h4>
@@ -408,24 +479,26 @@ function rStudents(){
         </div>
         <div class="card-actions"><button class="btn btn-ghost">View</button></div>
       </div>
-    </div>`;}).join('')}</div>`;}
+    </div>`;}).join('')}</div>`;
+}
 
-// ── STUDENT DETAIL ─────────────────────────────────────────────────────
+// ── STUDENT DETAIL ──────────────────────────────────────────────────────
 function openStudent(id){S.studentId=id;S.section='students';render();}
-function rStudent(){
-  const u=getUsers().find(x=>x.id===S.studentId);if(!u)return'';
-  const cls=getClasses(u.id),n=getNote(u.id),now=new Date();
+
+function rStudent() {
+  const u=S.allUsers[S.studentId]; if(!u) return '';
+  const cls=classesForUser(S.studentId), n=noteForUser(S.studentId), now=new Date();
   const ctm=cls.filter(c=>{const d=new Date(c.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).length;
   const done=(u.syllabusTopics||[]).filter(t=>t.status==='completed').length;
 
-  return`<div>
+  return `<div>
   <button class="back-btn" onclick="S.studentId=null;render()">← Students</button>
   <div class="row-between" style="margin-bottom:20px">
     <div><div class="page-title" style="margin-bottom:2px">${u.studentName}</div>
     <div style="font-size:13px;color:var(--text-2)">${u.name} &middot; ${u.phone}</div></div>
     <div style="display:flex;gap:7px;flex-wrap:wrap">
-      <button class="btn btn-warn" onclick="openNote('${u.id}')">Teacher's note</button>
-      <button class="btn btn-primary" onclick="openClass('${u.id}')">Log class</button>
+      <button class="btn btn-warn" onclick="openNote('${S.studentId}')">Teacher's note</button>
+      <button class="btn btn-primary" onclick="openClass('${S.studentId}')">Log class</button>
     </div>
   </div>
 
@@ -433,22 +506,23 @@ function rStudent(){
     <div class="stat-box"><div class="sl">This month</div><div class="sv">${ctm}<span style="font-size:14px;color:var(--text-3)"> / ${u.totalClassesMonth}</span></div></div>
     <div class="stat-box"><div class="sl">Total classes</div><div class="sv">${cls.length}</div></div>
     <div class="stat-box"><div class="sl">Topics done</div><div class="sv">${done}<span style="font-size:14px;color:var(--text-3)"> / ${(u.syllabusTopics||[]).length}</span></div></div>
-    <div class="stat-box"><div class="sl">Per month</div><div class="sv" style="font-size:18px">${u.totalClassesMonth}</div><div class="ss"><a onclick="editTCM('${u.id}')">Edit</a></div></div>
+    <div class="stat-box"><div class="sl">Per month</div><div class="sv" style="font-size:18px">${u.totalClassesMonth}</div><div class="ss"><a onclick="editTCM('${S.studentId}')">Edit</a></div></div>
   </div>
 
   <div class="cred-card">
     <div style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Parent credentials <span style="font-size:10px;color:var(--text-3);font-weight:400;text-transform:none;letter-spacing:0">— admin only</span></div>
     <div class="cred-grid">
       <div class="cred-item"><div class="cl">Login name</div><div class="cv">${u.name}</div></div>
-      <div class="cred-item"><div class="cl">Email</div><div class="cv" style="font-size:12px">${u.email||'—'}</div></div>
+      <div class="cred-item"><div class="cl">Email (login)</div><div class="cv" style="font-size:12px">${u.email||'—'}</div></div>
       <div class="cred-item"><div class="cl">Phone</div><div class="cv">${u.phone}</div></div>
       <div class="cred-item"><div class="cl">Password</div>
         <div style="display:flex;align-items:center">
           <span id="pw-reveal" class="cv">••••••••</span>
-          <button class="reveal-btn" onclick="toggleReveal('${u.password}')">Show</button>
+          <button class="reveal-btn" onclick="toggleReveal()">Show</button>
         </div>
       </div>
     </div>
+    <div style="font-size:11px;color:var(--text-3);margin-top:10px">Password is managed by Firebase Auth. Use "Reset password" if a parent is locked out.</div>
   </div>
 
   ${n?`<div class="card" style="margin-bottom:20px">
@@ -457,7 +531,7 @@ function rStudent(){
       <div style="font-size:11px;color:var(--text-3)">${n.weekOf?`Week of ${fmt(n.weekOf)}`:''}</div>
     </div>
     <div class="note-preview">${n.note}</div>
-    <button class="btn btn-ghost" onclick="openNote('${u.id}')">Edit</button>
+    <button class="btn btn-ghost" onclick="openNote('${S.studentId}')">Edit</button>
   </div>`:''}
 
   <div class="section-title">Classes</div>
@@ -468,7 +542,7 @@ function rStudent(){
       <td style="white-space:nowrap">${fmt(c.date)}</td>
       <td>${c.topic}</td>
       <td>${c.homework||'—'}</td>
-      <td><button onclick="toggleHW('${c.id}')" class="badge ${c.hwDone?'badge-green':'badge-amber'}" style="cursor:pointer;border:none;font-family:var(--ff-b)">${c.hwDone?'Done':'Pending'}</button></td>
+      <td><button onclick="toggleHW('${c.id}','${!c.hwDone}')" class="badge ${c.hwDone?'badge-green':'badge-amber'}" style="cursor:pointer;border:none;font-family:var(--ff-b)">${c.hwDone?'Done':'Pending'}</button></td>
       <td><div class="td-actions">
         <button class="btn btn-ghost" onclick="openEditClass('${c.id}')">Edit</button>
         <button class="btn btn-danger" onclick="delClass('${c.id}')">Delete</button>
@@ -478,7 +552,7 @@ function rStudent(){
 
   <div class="row-between" style="margin-top:4px">
     <div class="section-title" style="margin:0">Syllabus schedule</div>
-    <button class="btn btn-ghost" onclick="openEditSched('${u.id}')">Edit schedule</button>
+    <button class="btn btn-ghost" onclick="openEditSched('${S.studentId}')">Edit schedule</button>
   </div>
   <div style="margin-top:12px"></div>
   ${(u.syllabusSchedule&&u.syllabusSchedule.length)?`
@@ -488,7 +562,7 @@ function rStudent(){
       <td style="white-space:nowrap">${s.month}</td><td>Wk ${s.week}</td>
       <td>${s.topic}</td><td><span class="badge badge-amber">${s.type}</span></td>
     </tr>`).join('')}</tbody>
-  </table></div>`:`<div class="empty"><p>No schedule set. <button class="btn btn-ghost" style="margin-top:8px;display:inline-flex" onclick="openEditSched('${u.id}')">Add now</button></p></div>`}
+  </table></div>`:`<div class="empty"><p>No schedule set.<br><button class="btn btn-ghost" style="margin-top:8px" onclick="openEditSched('${S.studentId}')">Add now</button></p></div>`}
 
   <div class="section-title">Topics progress</div>
   ${(u.syllabusTopics&&u.syllabusTopics.length)?`
@@ -497,20 +571,21 @@ function rStudent(){
     <tbody>${u.syllabusTopics.map((t,i)=>`<tr>
       <td>${t.name}</td>
       <td><div class="status-toggle">
-        <button class="stbtn ${t.status==='completed'?'s-done':''}" onclick="setStatus('${u.id}',${i},'completed')">Done</button>
-        <button class="stbtn ${t.status==='ongoing'?'s-ongoing':''}" onclick="setStatus('${u.id}',${i},'ongoing')">Ongoing</button>
-        <button class="stbtn ${t.status==='not_started'?'s-not':''}" onclick="setStatus('${u.id}',${i},'not_started')">Not yet</button>
+        <button class="stbtn ${t.status==='completed'?'s-done':''}" onclick="setStatus('${S.studentId}',${i},'completed')">Done</button>
+        <button class="stbtn ${t.status==='ongoing'?'s-ongoing':''}" onclick="setStatus('${S.studentId}',${i},'ongoing')">Ongoing</button>
+        <button class="stbtn ${t.status==='not_started'?'s-not':''}" onclick="setStatus('${S.studentId}',${i},'not_started')">Not yet</button>
       </div></td>
     </tr>`).join('')}</tbody>
   </table></div>`:`<div class="empty"><p>No topics set.</p></div>`}
-  </div>`;}
+  </div>`;
+}
 
-// ── LOG CLASS MODAL ────────────────────────────────────────────────────
+// ── LOG CLASS ────────────────────────────────────────────────────────────
 function openClass(uid){S.classModal=uid;render();}
 function rClassModal(){
-  const u=getUsers().find(x=>x.id===S.classModal);
+  const u=S.allUsers[S.classModal];
   const today=new Date().toISOString().split('T')[0];
-  return`<div class="overlay" onclick="if(event.target===this)closeModals()">
+  return `<div class="overlay" onclick="if(event.target===this)closeModals()">
   <div class="modal">
     <h3>Log class</h3><p class="modal-sub">${u.studentName}</p>
     ${S.err?`<div class="alert alert-err">${S.err}</div>`:''}
@@ -527,18 +602,18 @@ function rClassModal(){
     </div>
   </div></div>`;}
 
-function doLogClass(){
-  const d=$('cl-d').value,t=$('cl-t').value.trim();
+async function doLogClass(){
+  const d=$('cl-d').value, t=$('cl-t').value.trim();
   if(!d||!t){S.err='Date and topic are required.';render();return;}
-  const nc={id:Date.now().toString(),userId:S.classModal,date:d,topic:t,homework:$('cl-h').value.trim(),hwDone:$('cl-done').checked};
-  const all=allClasses();all.push(nc);saveClasses(all);closeModals();showToast('Class logged','Session saved successfully.');render();
+  await db.ref('classes').push({userId:S.classModal,date:d,topic:t,homework:$('cl-h').value.trim(),hwDone:$('cl-done').checked,createdAt:new Date().toISOString()});
+  closeModals(); showToast('Class logged','Session saved successfully.');
 }
 
-// ── EDIT CLASS MODAL ───────────────────────────────────────────────────
+// ── EDIT CLASS ────────────────────────────────────────────────────────────
 function openEditClass(id){S.editClassId=id;S.classModal=null;render();}
 function rEditClassModal(){
-  const c=allClasses().find(x=>x.id===S.editClassId);if(!c)return'';
-  return`<div class="overlay" onclick="if(event.target===this)closeModals()">
+  const c=S.allClasses[S.editClassId]; if(!c) return '';
+  return `<div class="overlay" onclick="if(event.target===this)closeModals()">
   <div class="modal">
     <h3>Edit class</h3><p class="modal-sub">${fmt(c.date)}</p>
     ${S.err?`<div class="alert alert-err">${S.err}</div>`:''}
@@ -555,24 +630,23 @@ function rEditClassModal(){
     </div>
   </div></div>`;}
 
-function doEditClass(){
-  const d=$('ec-d').value,t=$('ec-t').value.trim();
+async function doEditClass(){
+  const d=$('ec-d').value, t=$('ec-t').value.trim();
   if(!d||!t){S.err='Date and topic are required.';render();return;}
-  const all=allClasses(),i=all.findIndex(c=>c.id===S.editClassId);
-  all[i]={...all[i],date:d,topic:t,homework:$('ec-h').value.trim(),hwDone:$('ec-done').checked};
-  saveClasses(all);closeModals();showToast('Updated','Class entry saved.');render();
+  await db.ref('classes/'+S.editClassId).update({date:d,topic:t,homework:$('ec-h').value.trim(),hwDone:$('ec-done').checked});
+  closeModals(); showToast('Updated','Class entry saved.');
 }
 
-// ── EDIT SCHEDULE MODAL ────────────────────────────────────────────────
+// ── EDIT SCHEDULE ──────────────────────────────────────────────────────
 function openEditSched(uid){
-  const u=getUsers().find(x=>x.id===uid);
+  const u=S.allUsers[uid];
   S.editSchedId=uid;
   S.editRows=u.syllabusSchedule&&u.syllabusSchedule.length?JSON.parse(JSON.stringify(u.syllabusSchedule)):[{month:'',week:'1',topic:'',type:'New'}];
   render();
 }
 function rEditSchedModal(){
-  const u=getUsers().find(x=>x.id===S.editSchedId);if(!u)return'';
-  return`<div class="overlay" onclick="if(event.target===this)closeModals()">
+  const u=S.allUsers[S.editSchedId]; if(!u) return '';
+  return `<div class="overlay" onclick="if(event.target===this)closeModals()">
   <div class="modal" style="max-width:600px">
     <h3>Edit syllabus schedule</h3><p class="modal-sub">${u.studentName}</p>
     <div class="row-between">
@@ -589,7 +663,7 @@ function rEditSchedModal(){
     </div>
   </div></div>`;}
 
-function erHTML(r,i){return`<div class="builder-row">
+function erHTML(r,i){return `<div class="builder-row">
   <input placeholder="Apr 2025" value="${r.month||''}" oninput="S.editRows[${i}].month=this.value"/>
   <input type="number" min="1" max="4" value="${r.week||''}" oninput="S.editRows[${i}].week=this.value"/>
   <input placeholder="Topic" value="${r.topic||''}" oninput="S.editRows[${i}].topic=this.value"/>
@@ -597,19 +671,18 @@ function erHTML(r,i){return`<div class="builder-row">
   <button class="del-btn" onclick="S.editRows.splice(${i},1);reRender('er-rows',()=>S.editRows.map((r,i)=>erHTML(r,i)).join(''))">✕</button>
 </div>`;}
 
-function doSaveSched(){
-  const all=getUsers(),i=all.findIndex(u=>u.id===S.editSchedId);
-  all[i].syllabusSchedule=S.editRows.filter(r=>r.month&&r.topic);
-  saveUsers(all);closeModals();showToast('Updated','Syllabus schedule saved.');render();
+async function doSaveSched(){
+  const rows=S.editRows.filter(r=>r.month&&r.topic);
+  await db.ref('users/'+S.editSchedId).update({syllabusSchedule:rows.length?rows:[]});
+  closeModals(); showToast('Updated','Syllabus schedule saved.');
 }
 
-// ── NOTE MODAL ─────────────────────────────────────────────────────────
+// ── NOTE ────────────────────────────────────────────────────────────────
 function openNote(uid){S.noteModal=uid;render();}
 function rNoteModal(){
-  const u=getUsers().find(x=>x.id===S.noteModal);
-  const ex=getNote(u.id);
+  const u=S.allUsers[S.noteModal], ex=S.allNotes[S.noteModal];
   const today=new Date().toISOString().split('T')[0];
-  return`<div class="overlay" onclick="if(event.target===this)closeModals()">
+  return `<div class="overlay" onclick="if(event.target===this)closeModals()">
   <div class="modal">
     <h3>Teacher's note</h3><p class="modal-sub">${u.studentName} — visible to parent all week</p>
     ${S.err?`<div class="alert alert-err">${S.err}</div>`:''}
@@ -621,18 +694,17 @@ function rNoteModal(){
     </div>
   </div></div>`;}
 
-function doSaveNote(){
-  const n=$('nt-n').value.trim(),w=$('nt-w').value;
+async function doSaveNote(){
+  const n=$('nt-n').value.trim(), w=$('nt-w').value;
   if(!n){S.err='Please write a note.';render();return;}
-  const all=notes().filter(x=>x.userId!==S.noteModal);
-  all.push({userId:S.noteModal,note:n,weekOf:w});sl(K.NOTES,all);
-  closeModals();showToast('Note saved','Parents can now see the note.');render();
+  await db.ref('notes/'+S.noteModal).set({note:n,weekOf:w,updatedAt:new Date().toISOString()});
+  closeModals(); showToast('Note saved','Parents can now see the note.');
 }
 
 // ── CHANGE PASSWORD MODAL ──────────────────────────────────────────────
 function rPwModal(){
   const c=getCreds();
-  return`<div class="overlay" onclick="if(event.target===this)closeModals()">
+  return `<div class="overlay" onclick="if(event.target===this)closeModals()">
   <div class="modal">
     <h3>Change password</h3>
     ${S.err?`<div class="alert alert-err">${S.err}</div>`:''}
@@ -647,61 +719,69 @@ function rPwModal(){
   </div></div>`;}
 
 function doSavePw(){
-  const u=$('pw-u').value.trim(),c=$('pw-c').value,n=$('pw-n').value;
+  const u=$('pw-u').value.trim(), c=$('pw-c').value, n=$('pw-n').value;
   const creds=getCreds();
   if(c!==creds.password){S.err='Current password is incorrect.';render();return;}
   if(!u){S.err='Username cannot be empty.';render();return;}
-  sl(K.ADM,{username:u,password:n||creds.password});
+  localStorage.setItem('ml_adm',JSON.stringify({username:u,password:n||creds.password}));
   S.ok='Password updated.';S.err='';render();
   setTimeout(closeModals,1400);
 }
 
 // ── HELPERS ────────────────────────────────────────────────────────────
-function setStatus(uid,idx,status){
-  const all=getUsers(),i=all.findIndex(u=>u.id===uid);
-  all[i].syllabusTopics[idx].status=status;saveUsers(all);render();
+async function setStatus(uid, idx, status) {
+  const topics=JSON.parse(JSON.stringify(S.allUsers[uid].syllabusTopics||[]));
+  topics[idx].status=status;
+  await db.ref('users/'+uid).update({syllabusTopics:topics});
 }
-function toggleHW(id){
-  const all=allClasses(),i=all.findIndex(c=>c.id===id);
-  all[i].hwDone=!all[i].hwDone;saveClasses(all);render();
+
+async function toggleHW(classId, val) {
+  await db.ref('classes/'+classId).update({hwDone:val==='true'});
 }
-function delClass(id){
-  if(!confirm('Delete this class entry?'))return;
-  saveClasses(allClasses().filter(c=>c.id!==id));render();
+
+async function delClass(id) {
+  if(!confirm('Delete this class entry?')) return;
+  await db.ref('classes/'+id).remove();
 }
-function editTCM(uid){
-  const all=getUsers(),i=all.findIndex(u=>u.id===uid);
-  const v=prompt('Total classes per month:',all[i].totalClassesMonth);
-  if(v===null)return;const n=parseInt(v);
+
+async function editTCM(uid) {
+  const v=prompt('Total classes per month:', S.allUsers[uid].totalClassesMonth);
+  if(v===null) return;
+  const n=parseInt(v);
   if(!n||n<1){alert('Enter a valid number.');return;}
-  all[i].totalClassesMonth=n;saveUsers(all);render();
+  await db.ref('users/'+uid).update({totalClassesMonth:n});
 }
-function toggleReveal(pw){
-  const el=$('pw-reveal'),btn=el&&el.nextElementSibling;if(!el)return;
+
+function toggleReveal() {
+  // Password is managed by Firebase Auth, so we can't show it directly
+  // Instead show email for reference
+  const el=$('pw-reveal'), btn=el&&el.nextElementSibling;
+  if(!el) return;
+  const u=S.allUsers[S.studentId];
   const hidden=el.textContent==='••••••••';
-  el.textContent=hidden?pw:'••••••••';
-  if(btn)btn.textContent=hidden?'Hide':'Show';
+  el.textContent=hidden?`[Firebase Auth — reset via console if needed]`:'••••••••';
+  if(btn) btn.textContent=hidden?'Hide':'Show';
 }
+
 function setSection(s){S.section=s;S.studentId=null;S.ok='';render();}
-function closeModals(){S.approveModal=null;S.classModal=null;S.editClassId=null;S.editSchedId=null;S.noteModal=null;S.pwModal=false;S.err='';S.ok='';render();}
+
+function closeModals(){
+  S.approveModal=null;S.classModal=null;S.editClassId=null;
+  S.editSchedId=null;S.noteModal=null;S.pwModal=false;
+  S.err='';S.ok='';render();
+}
+
 function doLogout(){S.loggedIn=false;render();}
 
-// Toast
-function showToast(title,body){
-  const wrap=$('toast-wrap');if(!wrap)return;
+function showToast(title, body) {
+  const wrap=$('toast-wrap'); if(!wrap) return;
   const id='t'+Date.now();
   const el=document.createElement('div');
-  el.className='toast';el.id=id;
+  el.className='toast'; el.id=id;
   el.innerHTML=`<div class="toast-title">${title}</div><div class="toast-body">${body}</div>`;
-  wrap.appendChild(el);setTimeout(()=>{const e=$(id);if(e)e.remove();},4000);
+  wrap.appendChild(el);
+  setTimeout(()=>{const e=$(id);if(e)e.remove();},4000);
 }
-
-// Auto-refresh
-let lastPending=0;
-window.addEventListener('storage',e=>{if(e.key===K.USERS&&S.loggedIn){const p=getUsers().filter(u=>u.status==='pending');if(p.length>lastPending){showToast('New request',p[p.length-1].name+' signed up.');if(!S.studentId&&!S.approveModal){S.section='pending';render();}}lastPending=p.length;}});
-setInterval(()=>{if(!S.loggedIn)return;const p=getUsers().filter(u=>u.status==='pending');if(p.length>lastPending){showToast('New request',p[p.length-1].name+' signed up.');lastPending=p.length;if(!S.studentId&&!S.approveModal){S.section='pending';render();}}},10000);
-
-render();
 </script>
 </body>
 </html>
