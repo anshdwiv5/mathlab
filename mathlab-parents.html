@@ -10,6 +10,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#166534">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -21,12 +24,10 @@
   --warn:#92400E;--warn-lt:#FFFBEB;
   --border:#E4E4E7;--border-strong:#D1D1D6;
   --radius:12px;--radius-sm:8px;--radius-xs:6px;
-  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
-  --shadow-md:0 4px 12px rgba(0,0,0,.10);
+  --shadow:0 1px 3px rgba(0,0,0,.08);--shadow-md:0 4px 12px rgba(0,0,0,.10);
   --ff-d:'DM Serif Display',Georgia,serif;--ff-b:'DM Sans',sans-serif;
   --t:150ms ease;
-  --sat:env(safe-area-inset-top,0px);
-  --sab:env(safe-area-inset-bottom,0px);
+  --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
 }
 [data-theme="dark"]{
   --bg:#0C0C0E;--surface:#161618;--surface-alt:#1E1E21;
@@ -38,31 +39,31 @@
 }
 html{-webkit-text-size-adjust:100%;overflow-x:hidden}
 body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:100dvh;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
-#app{min-height:100dvh;position:relative}
+#app{min-height:100dvh}
 
-/* ── TYPOGRAPHY ── */
-.display{font-family:var(--ff-d);font-size:clamp(24px,6vw,32px);line-height:1.2;letter-spacing:-.01em}
-.heading{font-family:var(--ff-d);font-size:clamp(18px,4.5vw,22px);line-height:1.3}
-.label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2)}
-.caption{font-size:12px;color:var(--text-2)}
+/* Loading */
+.loading-screen{min-height:100dvh;min-height:100svh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.spinner{width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── AUTH LAYOUT ── */
+/* Auth */
 .auth-wrap{min-height:100dvh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(var(--sat)+56px) 20px calc(var(--sab)+32px)}
 .brand{text-align:center;margin-bottom:28px}
 .brand-mark{width:52px;height:52px;background:var(--primary);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:24px;color:#fff;margin-bottom:12px}
 .brand h1{font-family:var(--ff-d);font-size:26px;margin-bottom:2px}
 .brand p{font-size:13px;color:var(--text-2)}
 .auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;width:100%;max-width:400px;box-shadow:var(--shadow-md)}
-.auth-card .card-heading{font-family:var(--ff-d);font-size:20px;margin-bottom:4px}
-.auth-card .card-sub{font-size:13px;color:var(--text-2);margin-bottom:22px}
+@media(min-width:480px){.auth-card{padding:32px 28px}}
+.card-heading{font-family:var(--ff-d);font-size:20px;margin-bottom:4px}
+.card-sub{font-size:13px;color:var(--text-2);margin-bottom:22px}
 
-/* ── STEPS ── */
+/* Steps */
 .steps{display:flex;gap:6px;margin-bottom:20px}
 .step{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background var(--t)}
 .step.active{background:var(--primary)}
 .step.done{background:var(--primary);opacity:.4}
 
-/* ── FORM ── */
+/* Form */
 .field{margin-bottom:14px}
 .field label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;letter-spacing:.03em}
 .field input{width:100%;padding:11px 13px;background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius-xs);font-family:var(--ff-b);font-size:16px;color:var(--text);outline:none;transition:border-color var(--t),box-shadow var(--t);-webkit-appearance:none}
@@ -70,133 +71,98 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:1
 .field input::placeholder{color:var(--text-3)}
 .otp-field{letter-spacing:.6em;font-size:24px;font-weight:600;text-align:center}
 
-/* ── BUTTONS ── */
+/* Buttons */
 .btn{display:block;width:100%;padding:12px 16px;border:none;border-radius:var(--radius-xs);font-family:var(--ff-b);font-size:14px;font-weight:600;cursor:pointer;transition:all var(--t);text-align:center;touch-action:manipulation;-webkit-appearance:none}
 .btn-primary{background:var(--primary);color:#fff}
 .btn-primary:active{background:var(--primary-hv);transform:scale(.98)}
 .btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none}
 .btn-ghost{background:transparent;color:var(--text-2);border:1px solid var(--border)}
 .btn-ghost:active{border-color:var(--primary);color:var(--primary)}
-.btn-danger-ghost{background:transparent;color:var(--danger);border:1px solid var(--border)}
-.btn-sm{padding:7px 13px;font-size:13px;width:auto;display:inline-flex;align-items:center;gap:5px}
-.link{background:none;border:none;color:var(--primary);font-family:var(--ff-b);font-size:13px;font-weight:500;cursor:pointer;padding:0;text-decoration:none;border-bottom:1px solid transparent}
-.link:hover{border-bottom-color:var(--primary)}
+.link{background:none;border:none;color:var(--primary);font-family:var(--ff-b);font-size:13px;font-weight:500;cursor:pointer;padding:0}
 .auth-cta{margin-top:16px;text-align:center;font-size:13px;color:var(--text-2)}
 
-/* ── ALERTS ── */
+/* Alerts */
 .alert{border-radius:var(--radius-xs);padding:10px 13px;font-size:13px;margin-bottom:14px;line-height:1.5}
 .alert-err{background:var(--danger-lt);color:var(--danger);border:1px solid rgba(220,38,38,.2)}
 .alert-ok{background:var(--primary-lt);color:var(--primary);border:1px solid rgba(var(--primary-r),.2)}
 .alert-info{background:var(--warn-lt);color:var(--warn);border:1px solid rgba(146,64,14,.2)}
 
-/* ── PENDING ── */
+/* Pending */
 .pending-wrap{min-height:100dvh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px calc(var(--sab)+24px);text-align:center}
-.pending-icon{width:72px;height:72px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px}
+.pending-icon{width:72px;height:72px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:26px;color:var(--text-2)}
 .pending-wrap h2{font-family:var(--ff-d);font-size:22px;margin-bottom:10px}
 .pending-wrap p{font-size:14px;color:var(--text-2);max-width:300px;line-height:1.65;margin-bottom:6px}
 
-/* ── HOME ── */
+/* Home */
 .home{min-height:100dvh;min-height:100svh;padding-bottom:calc(var(--sab)+24px)}
-
-/* Header */
 .app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:calc(var(--sat)+14px) 16px 0;position:sticky;top:0;z-index:20}
 .header-row{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px}
 .app-brand{display:flex;align-items:center;gap:9px}
 .app-brand-mark{width:30px;height:30px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:13px;color:#fff;flex-shrink:0}
-.app-brand-name{font-family:var(--ff-d);font-size:16px;color:var(--text)}
-
-/* Hamburger */
+.app-brand-name{font-family:var(--ff-d);font-size:16px}
 .hbtn{background:none;border:1px solid var(--border);border-radius:var(--radius-xs);width:34px;height:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;padding:0;transition:border-color var(--t)}
 .hbtn:active{border-color:var(--primary)}
 .hb-bar{width:14px;height:1.5px;background:var(--text-2);border-radius:1px}
-
-/* Dropdown */
-.dropdown{position:absolute;top:calc(100% + 6px);right:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);min-width:190px;overflow:hidden;z-index:100;animation:fadeDown .12s ease}
+.dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);min-width:190px;overflow:hidden;z-index:100;animation:fadeDown .12s ease}
 @keyframes fadeDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .dd-item{display:flex;align-items:center;gap:11px;padding:12px 14px;font-size:14px;font-weight:500;color:var(--text);cursor:pointer;border:none;background:none;width:100%;font-family:var(--ff-b);text-align:left;transition:background var(--t);border-bottom:1px solid var(--border)}
 .dd-item:last-child{border-bottom:none}
 .dd-item:active{background:var(--surface-alt)}
 .dd-item.dd-danger{color:var(--danger)}
 .dd-icon{font-size:14px;width:18px;text-align:center;opacity:.7}
-
-/* Tabs */
 .tab-bar{display:flex;border-top:1px solid var(--border)}
 .tab{flex:1;padding:10px 4px;text-align:center;font-size:13px;font-weight:500;color:var(--text-3);border-bottom:2px solid transparent;cursor:pointer;transition:all var(--t);white-space:nowrap;touch-action:manipulation;background:none;border-left:none;border-right:none;border-top:none;font-family:var(--ff-b)}
 .tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
-
-/* Pane */
 .pane{padding:20px 16px;display:none}
 .pane.active{display:block}
-
-/* Overview */
 .greeting-name{font-family:var(--ff-d);font-size:20px;margin-bottom:2px}
 .greeting-sub{font-size:13px;color:var(--text-2);margin-bottom:18px}
 .stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
-.stat .s-label{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
-.stat .s-val{font-family:var(--ff-d);font-size:28px;color:var(--primary);line-height:1}
-.stat .s-val span{font-size:14px;color:var(--text-3)}
-.stat .s-note{font-size:11px;color:var(--text-2);margin-top:4px}
+.s-label{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
+.s-val{font-family:var(--ff-d);font-size:28px;color:var(--primary);line-height:1}
+.s-val span{font-size:14px;color:var(--text-3)}
+.s-note{font-size:11px;color:var(--text-2);margin-top:4px}
 .pbar{height:3px;background:var(--border);border-radius:2px;margin-top:10px;overflow:hidden}
 .pfill{height:100%;background:var(--primary);border-radius:2px;transition:width .5s ease}
-
-/* Note card */
 .note{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
-.note-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
 .note-title{font-size:13px;font-weight:600;color:var(--text)}
-.note-week{font-size:11px;color:var(--text-3);margin-top:2px}
+.note-week{font-size:11px;color:var(--text-3);margin-top:2px;margin-bottom:10px}
 .note-body{font-size:14px;color:var(--text-2);line-height:1.7}
-
-/* Section */
-.section-head{margin-bottom:4px}
 .section-head h3{font-family:var(--ff-d);font-size:18px}
-.section-sub{font-size:13px;color:var(--text-2);margin-bottom:14px}
-
-/* Class cards */
+.section-sub{font-size:13px;color:var(--text-2);margin-bottom:14px;margin-top:4px}
 .class-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px}
 .cc-meta{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px}
 .cc-topic{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.4}
 .cc-hw{font-size:13px;color:var(--text-2);margin-bottom:10px;padding:6px 10px;background:var(--surface-alt);border-radius:var(--radius-xs)}
 .cc-foot{display:flex;align-items:center;justify-content:space-between}
 .cc-foot span{font-size:12px;color:var(--text-3)}
-
-/* Badges */
 .badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:.02em}
 .badge-green{background:var(--primary-lt);color:var(--primary)}
 .badge-amber{background:var(--warn-lt);color:var(--warn)}
 .badge-neutral{background:var(--surface-alt);color:var(--text-2);border:1px solid var(--border)}
-
-/* Table */
 .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);margin-bottom:6px}
-table{width:100%;border-collapse:collapse;font-size:13px;min-width:400px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:380px}
 thead tr{border-bottom:1px solid var(--border)}
 th{padding:9px 13px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);white-space:nowrap;background:var(--surface-alt)}
 td{padding:11px 13px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
 tr:last-child td{border-bottom:none}
-
-/* Empty */
 .empty{text-align:center;padding:48px 20px;color:var(--text-3)}
-.empty .e-icon{font-size:28px;margin-bottom:10px;opacity:.5}
+.empty .e-icon{font-size:24px;margin-bottom:10px;opacity:.4}
 .empty p{font-size:13px;line-height:1.6}
-
-/* Legend */
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-2)}
 .legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-
-/* Modal — bottom sheet */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:200;backdrop-filter:blur(2px)}
 @media(min-width:520px){.overlay{align-items:center;padding:20px}}
-.sheet{background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:100%;max-height:88dvh;overflow-y:auto;animation:sheetUp .2s ease forwards;padding:20px 20px calc(var(--sab)+20px)}
-@media(min-width:520px){.sheet{border-radius:var(--radius);max-width:420px;padding:24px;animation:fadeDown .15s ease forwards}}
+.sheet{background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:100%;max-height:88dvh;overflow-y:auto;animation:sheetUp .2s ease;padding:20px 20px calc(var(--sab)+20px)}
+@media(min-width:520px){.sheet{border-radius:var(--radius);max-width:420px;padding:24px;animation:fadeDown .15s ease}}
 .sheet-handle{width:36px;height:3px;background:var(--border-strong);border-radius:2px;margin:0 auto 18px}
 @media(min-width:520px){.sheet-handle{display:none}}
 .sheet h3{font-family:var(--ff-d);font-size:19px;margin-bottom:14px}
 .sheet-actions{display:flex;gap:8px;margin-top:16px}
 .sheet-actions .btn{flex:1}
 @keyframes sheetUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
-
-/* Install modal */
 .device-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:16px}
 .dtab{flex:1;padding:9px 4px;text-align:center;font-size:13px;font-weight:500;color:var(--text-3);border-bottom:2px solid transparent;cursor:pointer;transition:all var(--t);background:none;border-left:none;border-right:none;border-top:none;font-family:var(--ff-b)}
 .dtab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
@@ -205,14 +171,10 @@ tr:last-child td{border-bottom:none}
 .step-num{width:22px;height:22px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
 .step-text{font-size:13px;color:var(--text);line-height:1.55}
 .step-text strong{color:var(--primary)}
-.install-note{background:var(--warn-lt);border-radius:var(--radius-xs);padding:9px 12px;font-size:12px;color:var(--warn);margin-top:12px;line-height:1.5;border:1px solid rgba(146,64,14,.15)}
-
-/* FAB (auth screens only) */
+.install-note{background:var(--warn-lt);border-radius:var(--radius-xs);padding:9px 12px;font-size:12px;color:var(--warn);margin-top:12px;line-height:1.5}
 .fab-wrap{position:fixed;top:calc(var(--sat)+12px);right:14px;z-index:50;display:flex;gap:7px}
 .fab{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-2);display:flex;align-items:center;gap:5px;box-shadow:var(--shadow);transition:all var(--t)}
 .fab:active{transform:scale(.95)}
-
-/* Animations */
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fade{animation:fadeUp .25s ease forwards}
 </style>
@@ -223,118 +185,172 @@ tr:last-child td{border-bottom:none}
   <button class="fab" onclick="toggleTheme()" id="theme-fab">Dark</button>
 </div>
 <div id="app"></div>
-
 <script>
+// ── FIREBASE ───────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyD-8CjgBhhg7idQ67TnoxAZJWodYzsukCw",
+  authDomain: "mathlab-d5d4c.firebaseapp.com",
+  databaseURL: "https://mathlab-d5d4c-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "mathlab-d5d4c",
+  storageBucket: "mathlab-d5d4c.firebasestorage.app",
+  messagingSenderId: "506143764338",
+  appId: "1:506143764338:web:197451c10bf8972f53f7eb"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
 emailjs.init('fzItBxRq2t5IcS_hg');
 
-const K={USERS:'ml_users',SESSION:'ml_session',CLASSES:'ml_classes',NOTES:'ml_notes',THEME:'ml_theme'};
-const S={screen:'login',tab:'overview',sd:{},otp:'',err:'',ok:'',itab:'ios'};
+// ── STATE ──────────────────────────────────────────────────────────────
+const S = { screen:'loading', tab:'overview', sd:{}, otp:'', err:'', ok:'', itab:'ios', uid:null, user:null, classes:[], note:null };
 
-const ls=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};
-const sl=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-const users=()=>ls(K.USERS)||[];
-const saveUsers=u=>sl(K.USERS,u);
-const session=()=>ls(K.SESSION);
-const saveSession=s=>sl(K.SESSION,s);
-const classes=uid=>(ls(K.CLASSES)||[]).filter(c=>c.userId===uid);
-const note=uid=>(ls(K.NOTES)||[]).find(n=>n.userId===uid)||null;
-const me=()=>{const s=session();if(!s)return null;return users().find(u=>u.id===s.id)||null};
-const fmt=d=>new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-const $=id=>document.getElementById(id);
-const err=e=>`<div class="alert alert-err">${e}</div>`;
-const ok=e=>`<div class="alert alert-ok">${e}</div>`;
-
-// Theme
-let theme=localStorage.getItem(K.THEME)||'light';
-document.documentElement.setAttribute('data-theme',theme);
-function toggleTheme(){
-  theme=theme==='light'?'dark':'light';
-  localStorage.setItem(K.THEME,theme);
-  document.documentElement.setAttribute('data-theme',theme);
-  const f=$('theme-fab');if(f)f.textContent=theme==='dark'?'Light':'Dark';
-  if(S.screen==='home')render();
+// ── THEME ──────────────────────────────────────────────────────────────
+let theme = localStorage.getItem('ml_theme') || 'light';
+document.documentElement.setAttribute('data-theme', theme);
+function toggleTheme() {
+  theme = theme==='light'?'dark':'light';
+  localStorage.setItem('ml_theme', theme);
+  document.documentElement.setAttribute('data-theme', theme);
+  const f = $('theme-fab'); if (f) f.textContent = theme==='dark'?'Light':'Dark';
+  if (S.screen==='home') render();
 }
 
-// Router
-function nav(screen,extra={}){S.screen=screen;S.err='';S.ok='';Object.assign(S,extra);render();window.scrollTo(0,0);}
-window.addEventListener('DOMContentLoaded',()=>{
-  const u=me();
-  if(u){u.status==='approved'?nav('home'):nav('pending');}
-  else nav('login');
-  const f=$('theme-fab');if(f)f.textContent=theme==='dark'?'Light':'Dark';
+const $ = id => document.getElementById(id);
+const fmt = d => new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+
+// ── AUTH STATE ─────────────────────────────────────────────────────────
+auth.onAuthStateChanged(async fbUser => {
+  if (fbUser) {
+    try {
+      const snap = await db.ref('users/' + fbUser.uid).once('value');
+      const user = snap.val();
+      if (user) {
+        S.uid = fbUser.uid;
+        S.user = { ...user, id: fbUser.uid };
+        await loadData();
+        user.status === 'approved' ? nav('home') : nav('pending');
+      } else {
+        await auth.signOut();
+        nav('login');
+      }
+    } catch(e) { await auth.signOut(); nav('login'); }
+  } else {
+    nav('login');
+  }
 });
 
-function render(){
-  const map={login:rLogin,signup1:rS1,signup2:rS2,signup3:rS3,pending:rPending,home:rHome};
-  $('app').innerHTML=(map[S.screen]||rLogin)();
-  const fab=$('fab-wrap');
-  if(fab)fab.style.display=S.screen==='home'?'none':'flex';
-  const tf=$('theme-fab');if(tf)tf.textContent=theme==='dark'?'Light':'Dark';
+async function loadData() {
+  if (!S.uid) return;
+  const [cSnap, nSnap, uSnap] = await Promise.all([
+    db.ref('classes').orderByChild('userId').equalTo(S.uid).once('value'),
+    db.ref('notes/' + S.uid).once('value'),
+    db.ref('users/' + S.uid).once('value')
+  ]);
+  S.classes = [];
+  cSnap.forEach(c => S.classes.push({ ...c.val(), id: c.key }));
+  S.note = nSnap.val();
+  S.user = { ...uSnap.val(), id: S.uid };
+}
+
+// ── ROUTER ─────────────────────────────────────────────────────────────
+function nav(screen, extra={}) {
+  S.screen = screen; S.err = ''; S.ok = '';
+  Object.assign(S, extra); render(); window.scrollTo(0,0);
+}
+
+function render() {
+  const map = { loading:rLoading, login:rLogin, signup1:rS1, signup2:rS2, signup3:rS3, pending:rPending, home:rHome };
+  $('app').innerHTML = (map[S.screen]||rLogin)();
+  const fab = $('fab-wrap');
+  if (fab) fab.style.display = S.screen==='home'?'none':'flex';
+  const tf = $('theme-fab'); if (tf) tf.textContent = theme==='dark'?'Light':'Dark';
+}
+
+// ── LOADING ────────────────────────────────────────────────────────────
+function rLoading() {
+  return `<div class="loading-screen"><div class="spinner"></div><div style="font-size:13px;color:var(--text-2)">Loading…</div></div>`;
 }
 
 // ── LOGIN ──────────────────────────────────────────────────────────────
-function rLogin(){return`<div class="auth-wrap fade">
+function rLogin() {
+  return `<div class="auth-wrap fade">
   <div class="brand"><div class="brand-mark">∑</div><h1>Math Lab</h1><p>Parent Portal</p></div>
   <div class="auth-card">
     <div class="card-heading">Sign in</div>
     <div class="card-sub">Track your child's progress</div>
-    ${S.err?`<div class="alert alert-err">${S.err}${S.err.includes('Invalid')?`<div style="margin-top:6px;font-size:12px;opacity:.8">Make sure you're using the same browser and device you signed up with. Account data is stored on your device.</div>`:''}</div>`:''}
-    ${S.ok?ok(S.ok):''}
+    ${S.err?`<div class="alert alert-err">${S.err}</div>`:''}
+    ${S.ok?`<div class="alert alert-ok">${S.ok}</div>`:''}
     <div class="field"><label>Name</label><input id="ln" type="text" placeholder="As registered" autocomplete="name" autocapitalize="none" autocorrect="off" spellcheck="false"/></div>
     <div class="field"><label>Password</label><input id="lp" type="password" placeholder="Enter your password" autocomplete="current-password" autocorrect="off" autocapitalize="off" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-    <button class="btn btn-primary" onclick="doLogin()" style="margin-top:4px">Sign in</button>
+    <button class="btn btn-primary" id="login-btn" onclick="doLogin()" style="margin-top:4px">Sign in</button>
     <div class="auth-cta">New parent? <button class="link" onclick="nav('signup1')">Create account</button></div>
-  </div></div>`;}
+  </div></div>`;
+}
 
-function doLogin(){
-  const name=$('ln').value.trim(),pw=$('lp').value.trim();
-  if(!name||!pw){S.err='Please fill in all fields.';render();return;}
-  const u=users().find(u=>u.name.toLowerCase()===name.toLowerCase()&&u.password===pw);
-  if(!u){S.err='Invalid name or password.';render();return;}
-  saveSession({id:u.id});u.status==='approved'?nav('home'):nav('pending');
+async function doLogin() {
+  const name = $('ln').value.trim(), pw = $('lp').value.trim();
+  if (!name||!pw) { S.err='Please fill in all fields.'; render(); return; }
+  const btn = $('login-btn'); btn.textContent='Signing in…'; btn.disabled=true;
+  try {
+    const snap = await db.ref('users').orderByChild('nameLower').equalTo(name.toLowerCase()).once('value');
+    if (!snap.exists()) { S.err='Invalid name or password.'; render(); return; }
+    let email = null;
+    snap.forEach(child => { email = child.val().email; });
+    await auth.signInWithEmailAndPassword(email, pw);
+    // onAuthStateChanged handles navigation
+  } catch(e) {
+    S.err = (e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'||e.code==='auth/user-not-found')
+      ? 'Invalid name or password.' : 'Sign in failed. Please try again.';
+    render();
+  }
 }
 
 // ── SIGNUP 1 ───────────────────────────────────────────────────────────
-function rS1(){const d=S.sd;return`<div class="auth-wrap fade">
+function rS1() {
+  const d = S.sd;
+  return `<div class="auth-wrap fade">
   <div class="brand"><div class="brand-mark">∑</div><h1>Math Lab</h1><p>Parent Portal</p></div>
   <div class="auth-card">
     <div class="steps"><div class="step active"></div><div class="step"></div><div class="step"></div></div>
     <div class="card-heading">Create account</div>
     <div class="card-sub">Step 1 of 3 — Your details</div>
-    ${S.err?err(S.err):''}
+    ${S.err?`<div class="alert alert-err">${S.err}</div>`:''}
     <div class="field"><label>Your name</label><input id="s1n" type="text" placeholder="Full name" value="${d.name||''}" autocomplete="name"/></div>
     <div class="field"><label>Email address</label><input id="s1e" type="email" placeholder="your@email.com" value="${d.email||''}" autocomplete="email" inputmode="email"/></div>
     <div class="field"><label>Phone number</label><input id="s1p" type="tel" placeholder="+91 9876543210" value="${d.phone||''}" autocomplete="tel" inputmode="tel"/></div>
     <div class="field"><label>Student's name</label><input id="s1s" type="text" placeholder="Your child's name" value="${d.studentName||''}"/></div>
     <button class="btn btn-primary" id="s1btn" onclick="doS1()" style="margin-top:4px">Send OTP</button>
     <div class="auth-cta">Have an account? <button class="link" onclick="nav('login')">Sign in</button></div>
-  </div></div>`;}
+  </div></div>`;
+}
 
-async function doS1(){
-  const name=$('s1n').value.trim(),email=$('s1e').value.trim(),phone=$('s1p').value.trim(),st=$('s1s').value.trim();
-  if(!name||!email||!phone||!st){S.err='All fields are required.';render();return;}
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){S.err='Please enter a valid email address.';render();return;}
-  if(phone.replace(/\D/g,'').length<10){S.err='Please enter a valid phone number.';render();return;}
-  if(users().find(u=>u.name.toLowerCase()===name.toLowerCase())){S.err='This name is already registered. Please sign in.';render();return;}
-  const btn=$('s1btn');btn.textContent='Sending…';btn.disabled=true;
-  const otp=Math.floor(100000+Math.random()*900000).toString();
-  try{
+async function doS1() {
+  const name=$('s1n').value.trim(), email=$('s1e').value.trim(), phone=$('s1p').value.trim(), st=$('s1s').value.trim();
+  if (!name||!email||!phone||!st) { S.err='All fields are required.'; render(); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { S.err='Please enter a valid email address.'; render(); return; }
+  if (phone.replace(/\D/g,'').length<10) { S.err='Please enter a valid phone number.'; render(); return; }
+  const snap = await db.ref('users').orderByChild('nameLower').equalTo(name.toLowerCase()).once('value');
+  if (snap.exists()) { S.err='This name is already registered. Please sign in.'; render(); return; }
+  const btn=$('s1btn'); btn.textContent='Sending…'; btn.disabled=true;
+  const otp = Math.floor(100000+Math.random()*900000).toString();
+  try {
     await emailjs.send('service_1x75rs9','template_6o9nzkj',{to_name:name,to_email:email,otp});
     nav('signup2',{sd:{name,email,phone,studentName:st},otp});
-  }catch(e){S.err=`Could not send OTP — ${e.text||e.message||'please try again'}.`;render();}
+  } catch(e) { S.err=`Could not send OTP — ${e.text||e.message||'please try again'}.`; render(); }
 }
 
 // ── SIGNUP 2 ───────────────────────────────────────────────────────────
-function rS2(){
-  const m=S.sd.email.replace(/(.{2})(.*)(@.*)/,(_,a,b,c)=>a+'*'.repeat(b.length)+c);
-  return`<div class="auth-wrap fade">
+function rS2() {
+  const m = S.sd.email.replace(/(.{2})(.*)(@.*)/,(_,a,b,c)=>a+'*'.repeat(b.length)+c);
+  return `<div class="auth-wrap fade">
   <div class="brand"><div class="brand-mark">∑</div><h1>Math Lab</h1><p>Parent Portal</p></div>
   <div class="auth-card">
     <div class="steps"><div class="step done"></div><div class="step active"></div><div class="step"></div></div>
     <div class="card-heading">Verify email</div>
     <div class="card-sub">Step 2 of 3 — Check your inbox</div>
-    ${S.err?err(S.err):''}${S.ok?ok(S.ok):''}
-    <div class="alert alert-info" style="margin-bottom:14px">OTP sent to <strong>${m}</strong>. Check your inbox and spam folder.</div>
+    ${S.err?`<div class="alert alert-err">${S.err}</div>`:''}
+    ${S.ok?`<div class="alert alert-ok">${S.ok}</div>`:''}
+    <div class="alert alert-info" style="margin-bottom:14px">OTP sent to <strong>${m}</strong>. Check inbox and spam folder.</div>
     <div class="field"><label>6-digit code</label>
     <input id="s2o" class="otp-field" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="——————" maxlength="6" onkeydown="if(event.key==='Enter')doS2()"/></div>
     <button class="btn btn-primary" onclick="doS2()">Verify</button>
@@ -342,57 +358,76 @@ function rS2(){
       <button class="link" onclick="nav('signup1',{sd:S.sd})">Change details</button>
       <button class="link" onclick="resendOtp()">Resend code</button>
     </div>
-  </div></div>`;}
+  </div></div>`;
+}
 
-function doS2(){
-  const o=$('s2o').value.trim();
-  if(o.length!==6){S.err='Please enter the 6-digit code.';render();return;}
-  if(o!==S.otp){S.err='Incorrect code. Please try again.';render();return;}
+function doS2() {
+  const o = $('s2o').value.trim();
+  if (o.length!==6) { S.err='Please enter the 6-digit code.'; render(); return; }
+  if (o!==S.otp) { S.err='Incorrect code. Please try again.'; render(); return; }
   nav('signup3',{sd:S.sd});
 }
-async function resendOtp(){
-  const otp=Math.floor(100000+Math.random()*900000).toString();
-  try{
+
+async function resendOtp() {
+  const otp = Math.floor(100000+Math.random()*900000).toString();
+  try {
     await emailjs.send('service_1x75rs9','template_6o9nzkj',{to_name:S.sd.name,to_email:S.sd.email,otp});
-    S.otp=otp;S.ok='Code resent. Check your inbox.';S.err='';render();
-  }catch(e){S.err='Failed to resend. Please try again.';render();}
+    S.otp=otp; S.ok='Code resent. Check your inbox.'; S.err=''; render();
+  } catch(e) { S.err='Failed to resend. Please try again.'; render(); }
 }
 
 // ── SIGNUP 3 ───────────────────────────────────────────────────────────
-function rS3(){return`<div class="auth-wrap fade">
+function rS3() {
+  return `<div class="auth-wrap fade">
   <div class="brand"><div class="brand-mark">∑</div><h1>Math Lab</h1><p>Parent Portal</p></div>
   <div class="auth-card">
     <div class="steps"><div class="step done"></div><div class="step done"></div><div class="step active"></div></div>
     <div class="card-heading">Set password</div>
     <div class="card-sub">Step 3 of 3 — Almost done</div>
-    ${S.err?err(S.err):''}
+    ${S.err?`<div class="alert alert-err">${S.err}</div>`:''}
     <div class="field"><label>Password</label><input id="s3p" type="password" placeholder="At least 6 characters" autocomplete="new-password"/></div>
     <div class="field"><label>Confirm password</label><input id="s3c" type="password" placeholder="Repeat password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doS3()"/></div>
     <button class="btn btn-primary" id="s3btn" onclick="doS3()" style="margin-top:4px">Create account</button>
     <div class="auth-cta"><button class="link" onclick="nav('signup1',{sd:S.sd})">Start over</button></div>
-  </div></div>`;}
-
-async function doS3(){
-  const pw=$('s3p').value,c=$('s3c').value;
-  if(!pw||!c){S.err='Please fill in both fields.';render();return;}
-  if(pw.length<6){S.err='Password must be at least 6 characters.';render();return;}
-  if(pw!==c){S.err='Passwords do not match.';render();return;}
-  const btn=$('s3btn');btn.textContent='Creating…';btn.disabled=true;
-  const user={id:Date.now().toString(),name:S.sd.name,phone:S.sd.phone,email:S.sd.email,studentName:S.sd.studentName,password:pw,status:'pending',totalClassesMonth:0,syllabusSchedule:[],syllabusTopics:[],createdAt:new Date().toISOString()};
-  const all=users();all.push(user);saveUsers(all);saveSession({id:user.id});
-  await notifyAdmin(user);nav('pending');
+  </div></div>`;
 }
-async function notifyAdmin(user){
-  try{await emailjs.send('service_1x75rs9','template_8imnvrh',{parent_name:user.name,student_name:user.studentName,phone:user.phone,parent_email:user.email||'—',signup_time:new Date().toLocaleString('en-IN')});}
-  catch(e){console.warn('Admin notify failed',e);}
+
+async function doS3() {
+  const pw=$('s3p').value, c=$('s3c').value;
+  if (!pw||!c) { S.err='Please fill in both fields.'; render(); return; }
+  if (pw.length<6) { S.err='Password must be at least 6 characters.'; render(); return; }
+  if (pw!==c) { S.err='Passwords do not match.'; render(); return; }
+  const btn=$('s3btn'); btn.textContent='Creating…'; btn.disabled=true;
+  try {
+    const cred = await auth.createUserWithEmailAndPassword(S.sd.email, pw);
+    const uid = cred.user.uid;
+    await db.ref('users/' + uid).set({
+      name: S.sd.name, nameLower: S.sd.name.toLowerCase(),
+      email: S.sd.email, phone: S.sd.phone,
+      studentName: S.sd.studentName, status: 'pending',
+      totalClassesMonth: 0, syllabusSchedule: [], syllabusTopics: [],
+      createdAt: new Date().toISOString()
+    });
+    await emailjs.send('service_1x75rs9','template_8imnvrh',{
+      parent_name:S.sd.name, student_name:S.sd.studentName,
+      phone:S.sd.phone, parent_email:S.sd.email,
+      signup_time:new Date().toLocaleString('en-IN')
+    }).catch(()=>{});
+    // onAuthStateChanged handles navigation
+  } catch(e) {
+    S.err = e.code==='auth/email-already-in-use'
+      ? 'This email is already registered. Please sign in.'
+      : 'Account creation failed. Please try again.';
+    render();
+  }
 }
 
 // ── PENDING ────────────────────────────────────────────────────────────
-function rPending(){
-  const u=me(),rej=u&&u.status==='rejected';
-  return`<div class="pending-wrap fade">
+function rPending() {
+  const rej = S.user && S.user.status==='rejected';
+  return `<div class="pending-wrap fade">
   <div style="text-align:center;margin-bottom:24px">
-    <div class="brand-mark" style="margin-bottom:8px">∑</div>
+    <div class="brand-mark" style="margin:0 auto 8px">∑</div>
     <div style="font-family:var(--ff-d);font-size:17px">Math Lab</div>
   </div>
   <div class="pending-icon">${rej?'✕':'…'}</div>
@@ -401,29 +436,29 @@ function rPending(){
       :`<p>Ansh will review and approve your request within 24 hours. If he does not, please text him.</p>
         <p style="font-size:12px;color:var(--text-3);margin-top:6px">You will be able to sign in once approved.</p>`}
   <button class="btn btn-ghost" style="max-width:180px;margin-top:28px" onclick="doLogout()">Sign out</button>
-  </div>`;}
+  </div>`;
+}
 
 // ── HOME ───────────────────────────────────────────────────────────────
-function rHome(){
-  const u=me();if(!u){nav('login');return'';}
-  const cls=classes(u.id),n=note(u.id);
+function rHome() {
+  const u=S.user; if (!u) { nav('login'); return ''; }
+  const cls=S.classes, n=S.note;
   const done=(u.syllabusTopics||[]).filter(t=>t.status==='completed').length;
   const total=(u.syllabusTopics||[]).length;
   const now=new Date();
   const ctm=cls.filter(c=>{const d=new Date(c.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).length;
 
-  return`<div class="home fade">
+  return `<div class="home fade">
   <header class="app-header">
     <div class="header-row">
       <div class="app-brand"><div class="app-brand-mark">∑</div><span class="app-brand-name">Math Lab</span></div>
       <div style="position:relative">
-        <button class="hbtn" id="hbtn" onclick="toggleMenu(event)" aria-label="Menu">
+        <button class="hbtn" id="hbtn" onclick="toggleMenu(event)">
           <div class="hb-bar"></div><div class="hb-bar"></div><div class="hb-bar"></div>
         </button>
         <div id="menu-drop" style="display:none" class="dropdown">
           <button class="dd-item" onclick="toggleTheme();closeMenu()">
-            <span class="dd-icon" id="theme-dd-icon">${theme==='dark'?'○':'●'}</span>
-            <span id="theme-dd-label">${theme==='dark'?'Light mode':'Dark mode'}</span>
+            <span class="dd-icon">${theme==='dark'?'○':'●'}</span><span>${theme==='dark'?'Light mode':'Dark mode'}</span>
           </button>
           <button class="dd-item" onclick="showInstall();closeMenu()">
             <span class="dd-icon">↑</span><span>Add to home screen</span>
@@ -448,22 +483,18 @@ function rHome(){
     <div class="greeting-name">Hello, ${u.name.split(' ')[0]}</div>
     <div class="greeting-sub">${u.studentName}'s progress dashboard</div>
     <div class="stat-row">
-      <div class="stat">
-        <div class="s-label">Classes this month</div>
+      <div class="stat"><div class="s-label">Classes this month</div>
         <div class="s-val">${ctm}<span> / ${u.totalClassesMonth||'—'}</span></div>
         ${u.totalClassesMonth?`<div class="pbar"><div class="pfill" style="width:${Math.min(100,ctm/u.totalClassesMonth*100)}%"></div></div>`:`<div class="s-note">Total not set</div>`}
       </div>
-      <div class="stat">
-        <div class="s-label">Syllabus done</div>
+      <div class="stat"><div class="s-label">Syllabus done</div>
         <div class="s-val">${done}<span> / ${total||'—'}</span></div>
         ${total?`<div class="pbar"><div class="pfill" style="width:${Math.min(100,done/total*100)}%"></div></div>`:`<div class="s-note">Not set yet</div>`}
       </div>
     </div>
     <div class="note">
-      <div class="note-header">
-        <div><div class="note-title">Teacher's note</div>
-        <div class="note-week">${n&&n.weekOf?`Week of ${fmt(n.weekOf)}`:'This week'}</div></div>
-      </div>
+      <div class="note-title">Teacher's note</div>
+      <div class="note-week">${n&&n.weekOf?`Week of ${fmt(n.weekOf)}`:'This week'}</div>
       <div class="note-body">${n&&n.note?n.note:'<em style="color:var(--text-3)">No note from Ansh yet this week.</em>'}</div>
     </div>
   </div>
@@ -490,10 +521,8 @@ function rHome(){
     <div class="table-wrap" style="margin-bottom:24px"><table>
       <thead><tr><th>Month</th><th>Week</th><th>Topic</th><th>Type</th></tr></thead>
       <tbody>${u.syllabusSchedule.map(s=>`<tr>
-        <td style="white-space:nowrap">${s.month}</td>
-        <td style="white-space:nowrap">Wk ${s.week}</td>
-        <td>${s.topic}</td>
-        <td><span class="badge badge-amber">${s.type}</span></td>
+        <td style="white-space:nowrap">${s.month}</td><td style="white-space:nowrap">Wk ${s.week}</td>
+        <td>${s.topic}</td><td><span class="badge badge-amber">${s.type}</span></td>
       </tr>`).join('')}</tbody>
     </table></div>`:`<div class="empty" style="padding:24px 0"><div class="e-icon">—</div><p>Syllabus plan not set yet.</p></div>`}
     <div class="section-head"><h3>Topics</h3></div>
@@ -514,7 +543,6 @@ function rHome(){
     </table></div>`:`<div class="empty" style="padding:24px 0"><div class="e-icon">—</div><p>Topics not set yet.</p></div>`}
   </div>
 
-  <!-- Change password sheet -->
   <div id="pw-overlay" class="overlay" style="display:none" onclick="if(event.target===this)closePwModal()">
     <div class="sheet">
       <div class="sheet-handle"></div>
@@ -529,90 +557,98 @@ function rHome(){
     </div>
   </div>
 
-  <!-- Install sheet -->
   <div id="install-overlay" class="overlay" style="display:none" onclick="if(event.target===this)closeInstall()">
     <div class="sheet">
       <div class="sheet-handle"></div>
       <h3>Add to home screen</h3>
       <p style="font-size:13px;color:var(--text-2);margin-bottom:14px">Open Math Lab as an app — no download needed.</p>
       <div class="device-tabs">
-        <button class="dtab ${S.itab==='ios'?'active':''}" onclick="setItab('ios')">iPhone</button>
-        <button class="dtab ${S.itab==='android'?'active':''}" onclick="setItab('android')">Android</button>
+        <button class="dtab ${S.itab==='ios'?'active':''}" id="dtab-ios" onclick="setItab('ios')">iPhone</button>
+        <button class="dtab ${S.itab==='android'?'active':''}" id="dtab-android" onclick="setItab('android')">Android</button>
       </div>
       <div id="install-body">${installBody()}</div>
       <button class="btn btn-primary" style="margin-top:18px" onclick="closeInstall()">Got it</button>
     </div>
   </div>
-  </div>`;}
+  </div>`;
+}
 
 // ── INSTALL ────────────────────────────────────────────────────────────
-function installBody(){
-  if(S.itab==='ios') return`
+function installBody() {
+  if (S.itab==='ios') return `
     <div class="install-step"><div class="step-num">1</div><div class="step-text">Open this page in <strong>Safari</strong> (not Chrome)</div></div>
-    <div class="install-step"><div class="step-num">2</div><div class="step-text">Tap the <strong>Share button</strong> at the bottom of the screen</div></div>
-    <div class="install-step"><div class="step-num">3</div><div class="step-text">Scroll down and tap <strong>"Add to Home Screen"</strong></div></div>
-    <div class="install-step"><div class="step-num">4</div><div class="step-text">Tap <strong>"Add"</strong> in the top right corner</div></div>
+    <div class="install-step"><div class="step-num">2</div><div class="step-text">Tap the <strong>Share button</strong> at the bottom</div></div>
+    <div class="install-step"><div class="step-num">3</div><div class="step-text">Tap <strong>"Add to Home Screen"</strong></div></div>
+    <div class="install-step"><div class="step-num">4</div><div class="step-text">Tap <strong>"Add"</strong> to confirm</div></div>
     <div class="install-step"><div class="step-num">5</div><div class="step-text">Math Lab will appear on your home screen</div></div>
-    <div class="install-note">Safari only. This does not work in Chrome on iPhone.</div>`;
-  return`
+    <div class="install-note">Safari only — this does not work in Chrome on iPhone.</div>`;
+  return `
     <div class="install-step"><div class="step-num">1</div><div class="step-text">Open this page in <strong>Chrome</strong></div></div>
     <div class="install-step"><div class="step-num">2</div><div class="step-text">Tap the <strong>three-dot menu</strong> at the top right</div></div>
     <div class="install-step"><div class="step-num">3</div><div class="step-text">Tap <strong>"Add to Home Screen"</strong></div></div>
     <div class="install-step"><div class="step-num">4</div><div class="step-text">Tap <strong>"Add"</strong> to confirm</div></div>
     <div class="install-step"><div class="step-num">5</div><div class="step-text">Math Lab will appear on your home screen</div></div>
-    <div class="install-note">Chrome may also show an install prompt at the bottom automatically.</div>`;
+    <div class="install-note">Chrome may show an install banner at the bottom automatically.</div>`;
 }
-function showInstall(){
-  if(S.screen==='home'){$('install-overlay').style.display='flex';}
-  else{
-    const old=$('install-overlay');if(old)old.remove();
-    const d=document.createElement('div');
-    d.innerHTML=`<div id="install-overlay" class="overlay" onclick="if(event.target===this)closeInstall()">
-      <div class="sheet"><div class="sheet-handle"></div>
-        <h3>Add to home screen</h3>
-        <p style="font-size:13px;color:var(--text-2);margin-bottom:14px">Open Math Lab as an app — no download needed.</p>
-        <div class="device-tabs">
-          <button class="dtab active" id="dtab-ios" onclick="setItab('ios')">iPhone</button>
-          <button class="dtab" id="dtab-android" onclick="setItab('android')">Android</button>
-        </div>
-        <div id="install-body">${installBody()}</div>
-        <button class="btn btn-primary" style="margin-top:18px" onclick="closeInstall()">Got it</button>
-      </div></div>`;
-    document.body.appendChild(d.firstElementChild);
-  }
+
+function showInstall() {
+  if (S.screen==='home') { $('install-overlay').style.display='flex'; return; }
+  const old=$('install-overlay'); if(old) old.remove();
+  const d=document.createElement('div');
+  d.innerHTML=`<div id="install-overlay" class="overlay" onclick="if(event.target===this)closeInstall()">
+    <div class="sheet"><div class="sheet-handle"></div>
+      <h3>Add to home screen</h3>
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:14px">Open Math Lab as an app — no download needed.</p>
+      <div class="device-tabs">
+        <button class="dtab active" id="dtab-ios" onclick="setItab('ios')">iPhone</button>
+        <button class="dtab" id="dtab-android" onclick="setItab('android')">Android</button>
+      </div>
+      <div id="install-body">${installBody()}</div>
+      <button class="btn btn-primary" style="margin-top:18px" onclick="closeInstall()">Got it</button>
+    </div></div>`;
+  document.body.appendChild(d.firstElementChild);
 }
-function closeInstall(){const m=$('install-overlay');if(m){if(S.screen==='home')m.style.display='none';else m.remove();}}
-function setItab(t){
+function closeInstall() { const m=$('install-overlay'); if(m){if(S.screen==='home')m.style.display='none';else m.remove();} }
+function setItab(t) {
   S.itab=t;
-  const b=$('install-body');if(b)b.innerHTML=installBody();
-  document.querySelectorAll('.dtab').forEach(el=>el.classList.toggle('active',el.id==='dtab-'+t||(!el.id&&t==='ios')));
+  const b=$('install-body'); if(b) b.innerHTML=installBody();
+  document.querySelectorAll('.dtab').forEach(el=>el.classList.toggle('active',el.id==='dtab-'+t));
 }
 
 // ── MENU ───────────────────────────────────────────────────────────────
-function toggleMenu(e){
+function toggleMenu(e) {
   e.stopPropagation();
-  const d=$('menu-drop');if(!d)return;
+  const d=$('menu-drop'); if(!d) return;
   const open=d.style.display==='block';
   d.style.display=open?'none':'block';
-  if(!open)setTimeout(()=>document.addEventListener('click',closeMenu,{once:true}),0);
+  if(!open) setTimeout(()=>document.addEventListener('click',closeMenu,{once:true}),0);
 }
-function closeMenu(){const d=$('menu-drop');if(d)d.style.display='none';}
-function showPwModal(){$('pw-overlay').style.display='flex';}
-function closePwModal(){$('pw-overlay').style.display='none';}
-function doChangePw(){
-  const c=$('cp-c').value,n=$('cp-n').value,k=$('cp-k').value;
-  const u=me(),m=$('pw-overlay').querySelector('.sheet');
+function closeMenu() { const d=$('menu-drop'); if(d) d.style.display='none'; }
+
+// ── CHANGE PASSWORD ────────────────────────────────────────────────────
+function showPwModal() { $('pw-overlay').style.display='flex'; }
+function closePwModal() { $('pw-overlay').style.display='none'; }
+async function doChangePw() {
+  const c=$('cp-c').value, n=$('cp-n').value, k=$('cp-k').value;
+  const m=$('pw-overlay').querySelector('.sheet');
   m.querySelectorAll('.alert').forEach(e=>e.remove());
-  if(u.password!==c){m.insertAdjacentHTML('afterbegin',`<div class="alert alert-err">Current password is incorrect.</div>`);return;}
-  if(n.length<6){m.insertAdjacentHTML('afterbegin',`<div class="alert alert-err">Password must be at least 6 characters.</div>`);return;}
-  if(n!==k){m.insertAdjacentHTML('afterbegin',`<div class="alert alert-err">Passwords do not match.</div>`);return;}
-  const all=users(),i=all.findIndex(x=>x.id===u.id);all[i].password=n;saveUsers(all);
-  m.insertAdjacentHTML('afterbegin',`<div class="alert alert-ok">Password updated successfully.</div>`);
-  setTimeout(closePwModal,1600);
+  if (n.length<6) { m.insertAdjacentHTML('afterbegin',`<div class="alert alert-err">Password must be at least 6 characters.</div>`); return; }
+  if (n!==k) { m.insertAdjacentHTML('afterbegin',`<div class="alert alert-err">Passwords do not match.</div>`); return; }
+  try {
+    const user=auth.currentUser;
+    const cred=firebase.auth.EmailAuthProvider.credential(user.email,c);
+    await user.reauthenticateWithCredential(cred);
+    await user.updatePassword(n);
+    m.insertAdjacentHTML('afterbegin',`<div class="alert alert-ok">Password updated successfully.</div>`);
+    setTimeout(closePwModal,1600);
+  } catch(e) {
+    const msg = e.code==='auth/wrong-password'||e.code==='auth/invalid-credential'?'Current password is incorrect.':'Failed to update. Please try again.';
+    m.insertAdjacentHTML('afterbegin',`<div class="alert alert-err">${msg}</div>`);
+  }
 }
 
-function switchTab(t){S.tab=t;render();window.scrollTo(0,0);}
-function doLogout(){localStorage.removeItem(K.SESSION);nav('login');}
+function switchTab(t) { S.tab=t; render(); window.scrollTo(0,0); }
+async function doLogout() { await auth.signOut(); S.uid=null; S.user=null; S.classes=[]; S.note=null; nav('login'); }
 </script>
 </body>
 </html>
