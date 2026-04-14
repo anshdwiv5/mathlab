@@ -3,207 +3,224 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Math Lab — Parent Portal</title>
+<title>Math Lab</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Math Lab">
-<meta name="theme-color" content="#166534">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#166534">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#F5F2EB;--bg-card:#FFFFFF;--bg-input:#EDE9DC;
-  --text:#1C1917;--text-2:#57534E;--text-3:#A8A29E;
-  --primary:#166534;--primary-r:22,101,52;--primary-lt:#DCFCE7;--primary-hv:#14532D;
-  --accent:#B45309;--accent-lt:#FEF3C7;
-  --border:#D6D0BE;--border-lt:#E7E4D8;
-  --r:14px;--r-sm:8px;--sh:0 1px 12px rgba(0,0,0,.07);--sh-lg:0 4px 24px rgba(0,0,0,.10);
-  --t:.2s ease;--ff-d:'DM Serif Display',Georgia,serif;--ff-b:'DM Sans',sans-serif;
-  --st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
+  --bg:#F7F7F6;--surface:#FFFFFF;--surface-alt:#F0EFED;
+  --text:#18181B;--text-2:#71717A;--text-3:#A1A1AA;
+  --primary:#166534;--primary-r:22,101,52;--primary-lt:#F0FDF4;--primary-hv:#14532D;
+  --danger:#DC2626;--danger-lt:#FEF2F2;
+  --warn:#92400E;--warn-lt:#FFFBEB;
+  --border:#E4E4E7;--border-strong:#D1D1D6;
+  --radius:12px;--radius-sm:8px;--radius-xs:6px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 12px rgba(0,0,0,.10);
+  --ff-d:'DM Serif Display',Georgia,serif;--ff-b:'DM Sans',sans-serif;
+  --t:150ms ease;
+  --sat:env(safe-area-inset-top,0px);
+  --sab:env(safe-area-inset-bottom,0px);
 }
 [data-theme="dark"]{
-  --bg:#111318;--bg-card:#1C2030;--bg-input:#252A3A;
-  --text:#EEE8D5;--text-2:#9CA3AF;--text-3:#6B7280;
-  --primary:#4ADE80;--primary-r:74,222,128;--primary-lt:#052E16;--primary-hv:#22C55E;
-  --accent:#FCD34D;--accent-lt:#1C1709;
-  --border:#2D3348;--border-lt:#252A3A;
+  --bg:#0C0C0E;--surface:#161618;--surface-alt:#1E1E21;
+  --text:#FAFAFA;--text-2:#A1A1AA;--text-3:#52525B;
+  --primary:#22C55E;--primary-r:34,197,94;--primary-lt:#052E16;--primary-hv:#16A34A;
+  --danger:#F87171;--danger-lt:#1C0A0A;
+  --warn:#FCD34D;--warn-lt:#1C1500;
+  --border:#27272A;--border-strong:#3F3F46;
 }
-html{-webkit-text-size-adjust:100%}
-body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:100vh;transition:background var(--t),color var(--t);-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
-.math-bg{position:fixed;inset:0;pointer-events:none;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E")}
-[data-theme="dark"] .math-bg{opacity:.03;filter:invert(1)}
-#app{position:relative;z-index:1;min-height:100vh}
+html{-webkit-text-size-adjust:100%;overflow-x:hidden}
+body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:100dvh;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+#app{min-height:100dvh;position:relative}
 
-/* Floating action buttons */
-.fab-row{position:fixed;top:calc(var(--st) + 12px);right:12px;z-index:100;display:flex;gap:8px}
-.fab{background:var(--bg-card);border:1px solid var(--border);border-radius:50px;padding:7px 13px;cursor:pointer;font-size:16px;display:flex;align-items:center;gap:5px;box-shadow:var(--sh);transition:all var(--t)}
-.fab:active{transform:scale(.93)}
-.fab-lbl{font-size:12px;font-weight:600;color:var(--text-2)}
-@media(max-width:360px){.fab-lbl{display:none}}
+/* ── TYPOGRAPHY ── */
+.display{font-family:var(--ff-d);font-size:clamp(24px,6vw,32px);line-height:1.2;letter-spacing:-.01em}
+.heading{font-family:var(--ff-d);font-size:clamp(18px,4.5vw,22px);line-height:1.3}
+.label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2)}
+.caption{font-size:12px;color:var(--text-2)}
 
-/* Auth */
-.auth-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(var(--st)+70px) 16px calc(var(--sb)+32px)}
-.auth-logo{text-align:center;margin-bottom:22px}
-.logo-icon{width:60px;height:60px;background:var(--primary);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:28px;color:#fff;margin-bottom:10px;box-shadow:0 4px 20px rgba(var(--primary-r),.3)}
-.auth-logo h1{font-family:var(--ff-d);font-size:28px;margin-bottom:3px}
-.auth-logo p{font-size:14px;color:var(--text-2)}
-.auth-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:22px 18px;width:100%;max-width:420px;box-shadow:var(--sh-lg)}
-@media(min-width:480px){.auth-card{padding:32px 28px}}
-.auth-card h2{font-family:var(--ff-d);font-size:21px;margin-bottom:4px}
-.subtitle{font-size:14px;color:var(--text-2);margin-bottom:18px}
+/* ── AUTH LAYOUT ── */
+.auth-wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(var(--sat)+56px) 20px calc(var(--sab)+32px)}
+.brand{text-align:center;margin-bottom:28px}
+.brand-mark{width:52px;height:52px;background:var(--primary);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:24px;color:#fff;margin-bottom:12px}
+.brand h1{font-family:var(--ff-d);font-size:26px;margin-bottom:2px}
+.brand p{font-size:13px;color:var(--text-2)}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;width:100%;max-width:400px;box-shadow:var(--shadow-md)}
+.auth-card .card-heading{font-family:var(--ff-d);font-size:20px;margin-bottom:4px}
+.auth-card .card-sub{font-size:13px;color:var(--text-2);margin-bottom:22px}
 
-/* Steps */
-.steps{display:flex;gap:8px;margin-bottom:18px}
-.step{flex:1;height:4px;border-radius:2px;background:var(--border);transition:background var(--t)}
+/* ── STEPS ── */
+.steps{display:flex;gap:6px;margin-bottom:20px}
+.step{flex:1;height:3px;border-radius:2px;background:var(--border);transition:background var(--t)}
 .step.active{background:var(--primary)}
-.step.done{background:var(--primary);opacity:.45}
+.step.done{background:var(--primary);opacity:.4}
 
-/* Form */
-.fg{margin-bottom:13px}
-.fg label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;letter-spacing:.04em;text-transform:uppercase}
-.fg input,.fg textarea{width:100%;padding:12px 14px;background:var(--bg-input);border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:var(--ff-b);font-size:16px;color:var(--text);transition:all var(--t);outline:none;-webkit-appearance:none}
-.fg input:focus,.fg textarea:focus{border-color:var(--primary);background:var(--bg-card);box-shadow:0 0 0 3px rgba(var(--primary-r),.12)}
-.fg input::placeholder{color:var(--text-3)}
-.otp-in{letter-spacing:.5em;font-size:26px;font-weight:700;text-align:center}
+/* ── FORM ── */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px;letter-spacing:.03em}
+.field input{width:100%;padding:11px 13px;background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius-xs);font-family:var(--ff-b);font-size:16px;color:var(--text);outline:none;transition:border-color var(--t),box-shadow var(--t);-webkit-appearance:none}
+.field input:focus{border-color:var(--primary);background:var(--surface);box-shadow:0 0 0 3px rgba(var(--primary-r),.1)}
+.field input::placeholder{color:var(--text-3)}
+.otp-field{letter-spacing:.6em;font-size:24px;font-weight:600;text-align:center}
 
-/* Buttons */
-.btn{width:100%;padding:14px;border:none;border-radius:var(--r-sm);font-family:var(--ff-b);font-size:16px;font-weight:600;cursor:pointer;transition:all var(--t);-webkit-appearance:none;touch-action:manipulation}
-.btn-p{background:var(--primary);color:#fff}
-.btn-p:active{background:var(--primary-hv);transform:scale(.98)}
-.btn-p:disabled{opacity:.6;cursor:not-allowed}
-.btn-gh{background:transparent;color:var(--text-2);border:1.5px solid var(--border)}
-.btn-gh:active{border-color:var(--primary);color:var(--primary)}
-.lnk{background:none;border:none;color:var(--primary);font-family:var(--ff-b);font-size:14px;font-weight:500;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
-.auth-footer{margin-top:16px;text-align:center;font-size:14px;color:var(--text-2)}
+/* ── BUTTONS ── */
+.btn{display:block;width:100%;padding:12px 16px;border:none;border-radius:var(--radius-xs);font-family:var(--ff-b);font-size:14px;font-weight:600;cursor:pointer;transition:all var(--t);text-align:center;touch-action:manipulation;-webkit-appearance:none}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:active{background:var(--primary-hv);transform:scale(.98)}
+.btn-primary:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.btn-ghost{background:transparent;color:var(--text-2);border:1px solid var(--border)}
+.btn-ghost:active{border-color:var(--primary);color:var(--primary)}
+.btn-danger-ghost{background:transparent;color:var(--danger);border:1px solid var(--border)}
+.btn-sm{padding:7px 13px;font-size:13px;width:auto;display:inline-flex;align-items:center;gap:5px}
+.link{background:none;border:none;color:var(--primary);font-family:var(--ff-b);font-size:13px;font-weight:500;cursor:pointer;padding:0;text-decoration:none;border-bottom:1px solid transparent}
+.link:hover{border-bottom-color:var(--primary)}
+.auth-cta{margin-top:16px;text-align:center;font-size:13px;color:var(--text-2)}
 
-/* Notices */
-.otp-notice{background:var(--primary-lt);border:1px solid var(--primary);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;color:var(--primary);margin-bottom:14px;text-align:center;line-height:1.6}
-.err{background:#FEE2E2;color:#DC2626;border-radius:var(--r-sm);padding:10px 14px;font-size:13px;margin-bottom:13px;line-height:1.5}
-.succ{background:var(--primary-lt);color:var(--primary);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;margin-bottom:13px}
+/* ── ALERTS ── */
+.alert{border-radius:var(--radius-xs);padding:10px 13px;font-size:13px;margin-bottom:14px;line-height:1.5}
+.alert-err{background:var(--danger-lt);color:var(--danger);border:1px solid rgba(220,38,38,.2)}
+.alert-ok{background:var(--primary-lt);color:var(--primary);border:1px solid rgba(var(--primary-r),.2)}
+.alert-info{background:var(--warn-lt);color:var(--warn);border:1px solid rgba(146,64,14,.2)}
 
-/* Pending */
-.pending-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px calc(var(--sb)+24px);text-align:center}
-.pending-icon{width:86px;height:86px;background:var(--accent-lt);border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 22px}
-.pending-screen h2{font-family:var(--ff-d);font-size:24px;margin-bottom:10px}
-.pending-screen p{color:var(--text-2);max-width:310px;line-height:1.65;margin-bottom:6px;font-size:15px}
+/* ── PENDING ── */
+.pending-wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px calc(var(--sab)+24px);text-align:center}
+.pending-icon{width:72px;height:72px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px}
+.pending-wrap h2{font-family:var(--ff-d);font-size:22px;margin-bottom:10px}
+.pending-wrap p{font-size:14px;color:var(--text-2);max-width:300px;line-height:1.65;margin-bottom:6px}
 
-/* Home */
-.home{min-height:100vh;padding-bottom:calc(var(--sb)+60px)}
-.home-header{background:var(--bg-card);border-bottom:1px solid var(--border);padding:calc(var(--st)+12px) 14px 0;position:sticky;top:0;z-index:10;box-shadow:var(--sh)}
-.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.logo-sm{display:flex;align-items:center;gap:8px}
-.logo-icon-sm{width:32px;height:32px;background:var(--primary);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--ff-d);font-size:14px;flex-shrink:0}
-.logo-sm span{font-family:var(--ff-d);font-size:17px}
-.hdr-btns{display:flex;gap:5px}
-.hamburger{background:var(--bg-input);border:1px solid var(--border);border-radius:8px;width:36px;height:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:all var(--t);-webkit-tap-highlight-color:transparent;touch-action:manipulation;padding:0}
-.hamburger:active{border-color:var(--primary);transform:scale(.9)}
-.hb-line{width:16px;height:2px;background:var(--text-2);border-radius:2px;transition:all var(--t)}
-/* Dropdown menu */
-.menu-drop{position:absolute;top:100%;right:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh-lg);min-width:200px;overflow:hidden;z-index:50;animation:fadeUp .15s ease forwards;margin-top:6px}
-.menu-item{display:flex;align-items:center;gap:12px;padding:13px 16px;font-size:14px;font-weight:500;color:var(--text);cursor:pointer;transition:background var(--t);border:none;background:none;width:100%;font-family:var(--ff-b);text-align:left;touch-action:manipulation}
-.menu-item:active{background:var(--bg-input)}
-.menu-item .mi-icon{font-size:17px;width:22px;text-align:center}
-.menu-item+.menu-item{border-top:1px solid var(--border-lt)}
-.menu-item.danger{color:#DC2626}
-.menu-backdrop{position:fixed;inset:0;z-index:40}
+/* ── HOME ── */
+.home{min-height:100dvh;padding-bottom:calc(var(--sab)+24px)}
+
+/* Header */
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:calc(var(--sat)+14px) 16px 0;position:sticky;top:0;z-index:20}
+.header-row{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px}
+.app-brand{display:flex;align-items:center;gap:9px}
+.app-brand-mark{width:30px;height:30px;background:var(--primary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:13px;color:#fff;flex-shrink:0}
+.app-brand-name{font-family:var(--ff-d);font-size:16px;color:var(--text)}
+
+/* Hamburger */
+.hbtn{background:none;border:1px solid var(--border);border-radius:var(--radius-xs);width:34px;height:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;padding:0;transition:border-color var(--t)}
+.hbtn:active{border-color:var(--primary)}
+.hb-bar{width:14px;height:1.5px;background:var(--text-2);border-radius:1px}
+
+/* Dropdown */
+.dropdown{position:absolute;top:calc(100% + 6px);right:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-md);min-width:190px;overflow:hidden;z-index:100;animation:fadeDown .12s ease}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.dd-item{display:flex;align-items:center;gap:11px;padding:12px 14px;font-size:14px;font-weight:500;color:var(--text);cursor:pointer;border:none;background:none;width:100%;font-family:var(--ff-b);text-align:left;transition:background var(--t);border-bottom:1px solid var(--border)}
+.dd-item:last-child{border-bottom:none}
+.dd-item:active{background:var(--surface-alt)}
+.dd-item.dd-danger{color:var(--danger)}
+.dd-icon{font-size:14px;width:18px;text-align:center;opacity:.7}
 
 /* Tabs */
-.tabs{display:flex}
-.tab{flex:1;padding:9px 6px;text-align:center;font-size:13px;font-weight:500;color:var(--text-3);border-bottom:2.5px solid transparent;cursor:pointer;transition:all var(--t);white-space:nowrap;touch-action:manipulation}
+.tab-bar{display:flex;border-top:1px solid var(--border)}
+.tab{flex:1;padding:10px 4px;text-align:center;font-size:13px;font-weight:500;color:var(--text-3);border-bottom:2px solid transparent;cursor:pointer;transition:all var(--t);white-space:nowrap;touch-action:manipulation;background:none;border-left:none;border-right:none;border-top:none;font-family:var(--ff-b)}
 .tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
 
-/* Tab content */
-.tab-c{padding:14px;display:none}
-.tab-c.active{display:block}
-@media(min-width:480px){.tab-c{padding:20px}}
+/* Pane */
+.pane{padding:20px 16px;display:none}
+.pane.active{display:block}
 
-/* Stats */
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--sh)}
-.stat-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:6px}
-.stat-val{font-family:var(--ff-d);font-size:26px;color:var(--primary);line-height:1}
-.stat-val span{font-size:14px;color:var(--text-3)}
-.stat-sub{font-size:11px;color:var(--text-2);margin-top:4px}
-.pbar{height:5px;background:var(--border);border-radius:3px;margin-top:8px;overflow:hidden}
-.pfill{height:100%;background:var(--primary);border-radius:3px;transition:width .6s ease}
+/* Overview */
+.greeting-name{font-family:var(--ff-d);font-size:20px;margin-bottom:2px}
+.greeting-sub{font-size:13px;color:var(--text-2);margin-bottom:18px}
+.stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.stat .s-label{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px}
+.stat .s-val{font-family:var(--ff-d);font-size:28px;color:var(--primary);line-height:1}
+.stat .s-val span{font-size:14px;color:var(--text-3)}
+.stat .s-note{font-size:11px;color:var(--text-2);margin-top:4px}
+.pbar{height:3px;background:var(--border);border-radius:2px;margin-top:10px;overflow:hidden}
+.pfill{height:100%;background:var(--primary);border-radius:2px;transition:width .5s ease}
 
-/* Teacher note */
-.note-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh)}
-.note-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.note-ico{width:36px;height:36px;background:var(--primary-lt);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.note-title{font-weight:600;font-size:14px}
-.note-week{font-size:11px;color:var(--text-3);margin-top:1px}
-.note-text{font-size:14px;color:var(--text-2);line-height:1.7}
+/* Note card */
+.note{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.note-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.note-title{font-size:13px;font-weight:600;color:var(--text)}
+.note-week{font-size:11px;color:var(--text-3);margin-top:2px}
+.note-body{font-size:14px;color:var(--text-2);line-height:1.7}
 
-/* Section headings */
-.sec-title{font-family:var(--ff-d);font-size:20px;margin-bottom:4px}
-.sec-sub{font-size:13px;color:var(--text-2);margin-bottom:12px}
-.greeting{font-family:var(--ff-d);font-size:22px;margin-bottom:3px}
-.greeting-sub{font-size:13px;color:var(--text-2);margin-bottom:14px}
+/* Section */
+.section-head{margin-bottom:4px}
+.section-head h3{font-family:var(--ff-d);font-size:18px}
+.section-sub{font-size:13px;color:var(--text-2);margin-bottom:14px}
 
-/* Class cards (mobile-friendly) */
-.class-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;box-shadow:var(--sh)}
-.cc-date{font-size:11px;color:var(--text-3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
-.cc-topic{font-size:15px;font-weight:600;margin-bottom:4px;color:var(--text)}
-.cc-hw{font-size:13px;color:var(--text-2);margin-bottom:8px;padding:6px 10px;background:var(--bg-input);border-radius:6px}
+/* Class cards */
+.class-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:8px}
+.cc-meta{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);margin-bottom:5px}
+.cc-topic{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px;line-height:1.4}
+.cc-hw{font-size:13px;color:var(--text-2);margin-bottom:10px;padding:6px 10px;background:var(--surface-alt);border-radius:var(--radius-xs)}
 .cc-foot{display:flex;align-items:center;justify-content:space-between}
+.cc-foot span{font-size:12px;color:var(--text-3)}
 
-/* Table (syllabus) */
-.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh);margin-bottom:4px}
-table{width:100%;border-collapse:collapse;background:var(--bg-card);font-size:13px}
-th{background:var(--primary-lt);color:var(--primary);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:9px 12px;text-align:left;white-space:nowrap}
-td{padding:11px 12px;border-bottom:1px solid var(--border-lt);color:var(--text);vertical-align:middle}
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:.02em}
+.badge-green{background:var(--primary-lt);color:var(--primary)}
+.badge-amber{background:var(--warn-lt);color:var(--warn)}
+.badge-neutral{background:var(--surface-alt);color:var(--text-2);border:1px solid var(--border)}
+
+/* Table */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);margin-bottom:6px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:400px}
+thead tr{border-bottom:1px solid var(--border)}
+th{padding:9px 13px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);white-space:nowrap;background:var(--surface-alt)}
+td{padding:11px 13px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
 tr:last-child td{border-bottom:none}
-.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:50px;font-size:11px;font-weight:600;white-space:nowrap}
-.bdg-g{background:var(--primary-lt);color:var(--primary)}
-.bdg-y{background:var(--accent-lt);color:var(--accent)}
-.bdg-gr{background:var(--border);color:var(--text-2)}
 
 /* Empty */
-.empty{text-align:center;padding:40px 20px;color:var(--text-3)}
-.empty .ei{font-size:34px;margin-bottom:10px}
-.empty p{font-size:14px;line-height:1.5}
+.empty{text-align:center;padding:48px 20px;color:var(--text-3)}
+.empty .e-icon{font-size:28px;margin-bottom:10px;opacity:.5}
+.empty p{font-size:13px;line-height:1.6}
 
 /* Legend */
-.legend{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap}
-.lg-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2)}
-.ld{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-2)}
+.legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
-/* Modal — bottom sheet on mobile */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;z-index:200;padding:0}
-@media(min-width:520px){.modal-overlay{align-items:center;padding:20px}}
-.modal{background:var(--bg-card);border-radius:20px 20px 0 0;padding:20px 18px calc(var(--sb)+20px);width:100%;max-width:100%;max-height:92vh;overflow-y:auto;animation:slideUp .25s ease forwards}
-@media(min-width:520px){.modal{border-radius:var(--r);padding:28px 24px;max-width:440px;animation:fadeUp .2s ease forwards}}
-.modal h3{font-family:var(--ff-d);font-size:20px;margin-bottom:12px}
-.modal-actions{display:flex;gap:10px;margin-top:16px}
-.modal-actions .btn{flex:1}
-.drag-bar{width:38px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
-@media(min-width:520px){.drag-bar{display:none}}
+/* Modal — bottom sheet */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:200;backdrop-filter:blur(2px)}
+@media(min-width:520px){.overlay{align-items:center;padding:20px}}
+.sheet{background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:100%;max-height:88dvh;overflow-y:auto;animation:sheetUp .2s ease forwards;padding:20px 20px calc(var(--sab)+20px)}
+@media(min-width:520px){.sheet{border-radius:var(--radius);max-width:420px;padding:24px;animation:fadeDown .15s ease forwards}}
+.sheet-handle{width:36px;height:3px;background:var(--border-strong);border-radius:2px;margin:0 auto 18px}
+@media(min-width:520px){.sheet-handle{display:none}}
+.sheet h3{font-family:var(--ff-d);font-size:19px;margin-bottom:14px}
+.sheet-actions{display:flex;gap:8px;margin-top:16px}
+.sheet-actions .btn{flex:1}
+@keyframes sheetUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
 
 /* Install modal */
-.inst-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:16px}
-.inst-tab{flex:1;padding:9px;text-align:center;font-size:13px;font-weight:600;color:var(--text-3);border-bottom:2.5px solid transparent;cursor:pointer;transition:all var(--t)}
-.inst-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
-.inst-step{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-lt)}
-.inst-step:last-child{border-bottom:none;padding-bottom:0}
-.inst-num{width:26px;height:26px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px}
-.inst-text{font-size:14px;color:var(--text);line-height:1.55}
-.inst-text em{color:var(--primary);font-style:normal;font-weight:600}
-.inst-note{background:var(--accent-lt);border-radius:var(--r-sm);padding:10px 13px;font-size:13px;color:var(--accent);margin-top:14px;line-height:1.5}
+.device-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:16px}
+.dtab{flex:1;padding:9px 4px;text-align:center;font-size:13px;font-weight:500;color:var(--text-3);border-bottom:2px solid transparent;cursor:pointer;transition:all var(--t);background:none;border-left:none;border-right:none;border-top:none;font-family:var(--ff-b)}
+.dtab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.install-step{display:flex;align-items:flex-start;gap:11px;padding:9px 0;border-bottom:1px solid var(--border)}
+.install-step:last-of-type{border-bottom:none}
+.step-num{width:22px;height:22px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.step-text{font-size:13px;color:var(--text);line-height:1.55}
+.step-text strong{color:var(--primary)}
+.install-note{background:var(--warn-lt);border-radius:var(--radius-xs);padding:9px 12px;font-size:12px;color:var(--warn);margin-top:12px;line-height:1.5;border:1px solid rgba(146,64,14,.15)}
+
+/* FAB (auth screens only) */
+.fab-wrap{position:fixed;top:calc(var(--sat)+12px);right:14px;z-index:50;display:flex;gap:7px}
+.fab{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-2);display:flex;align-items:center;gap:5px;box-shadow:var(--shadow);transition:all var(--t)}
+.fab:active{transform:scale(.95)}
 
 /* Animations */
-@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@keyframes slideUp{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:translateY(0)}}
-.fade-in{animation:fadeUp .3s ease forwards}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade{animation:fadeUp .25s ease forwards}
 </style>
 </head>
 <body>
-<div class="math-bg"></div>
-<div class="fab-row" id="fab-row">
-  <button class="fab" onclick="showInstall()"><span>📲</span><span class="fab-lbl">Add to Phone</span></button>
-  <button class="fab" onclick="toggleTheme()"><span id="th-icon">🌙</span></button>
+<div class="fab-wrap" id="fab-wrap">
+  <button class="fab" onclick="showInstall()">Add to Phone</button>
+  <button class="fab" onclick="toggleTheme()" id="theme-fab">Dark</button>
 </div>
 <div id="app"></div>
 
@@ -211,33 +228,366 @@ tr:last-child td{border-bottom:none}
 emailjs.init('fzItBxRq2t5IcS_hg');
 
 const K={USERS:'ml_users',SESSION:'ml_session',CLASSES:'ml_classes',NOTES:'ml_notes',THEME:'ml_theme'};
-const S={screen:'login',tab:'overview',signupData:{},mockOtp:'',error:'',info:'',iTab:'ios'};
+const S={screen:'login',tab:'overview',sd:{},otp:'',err:'',ok:'',itab:'ios'};
 
-const getLS=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};
-const setLS=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-const getUsers=()=>getLS(K.USERS)||[];
-const saveUsers=u=>setLS(K.USERS,u);
-const getSession=()=>getLS(K.SESSION);
-const saveSession=s=>setLS(K.SESSION,s);
-const getClasses=uid=>(getLS(K.CLASSES)||[]).filter(c=>c.userId===uid);
-const getNote=uid=>(getLS(K.NOTES)||[]).find(n=>n.userId===uid)||null;
-const getCU=()=>{const s=getSession();if(!s)return null;return getUsers().find(u=>u.id===s.id)||null;};
+const ls=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}};
+const sl=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const users=()=>ls(K.USERS)||[];
+const saveUsers=u=>sl(K.USERS,u);
+const session=()=>ls(K.SESSION);
+const saveSession=s=>sl(K.SESSION,s);
+const classes=uid=>(ls(K.CLASSES)||[]).filter(c=>c.userId===uid);
+const note=uid=>(ls(K.NOTES)||[]).find(n=>n.userId===uid)||null;
+const me=()=>{const s=session();if(!s)return null;return users().find(u=>u.id===s.id)||null};
 const fmt=d=>new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
 const $=id=>document.getElementById(id);
+const err=e=>`<div class="alert alert-err">${e}</div>`;
+const ok=e=>`<div class="alert alert-ok">${e}</div>`;
 
-// THEME
+// Theme
 let theme=localStorage.getItem(K.THEME)||'light';
 document.documentElement.setAttribute('data-theme',theme);
 function toggleTheme(){
   theme=theme==='light'?'dark':'light';
   localStorage.setItem(K.THEME,theme);
   document.documentElement.setAttribute('data-theme',theme);
-  document.querySelectorAll('.th-ico').forEach(e=>e.textContent=theme==='dark'?'☀️':'🌙');
-  const lbl=$('theme-lbl');if(lbl)lbl.textContent=theme==='dark'?'Light Mode':'Dark Mode';
+  const f=$('theme-fab');if(f)f.textContent=theme==='dark'?'Light':'Dark';
   if(S.screen==='home')render();
 }
 
-// HAMBURGER MENU
+// Router
+function nav(screen,extra={}){S.screen=screen;S.err='';S.ok='';Object.assign(S,extra);render();window.scrollTo(0,0);}
+window.addEventListener('DOMContentLoaded',()=>{
+  const u=me();
+  if(u){u.status==='approved'?nav('home'):nav('pending');}
+  else nav('login');
+  const f=$('theme-fab');if(f)f.textContent=theme==='dark'?'Light':'Dark';
+});
+
+function render(){
+  const map={login:rLogin,signup1:rS1,signup2:rS2,signup3:rS3,pending:rPending,home:rHome};
+  $('app').innerHTML=(map[S.screen]||rLogin)();
+  const fab=$('fab-wrap');
+  if(fab)fab.style.display=S.screen==='home'?'none':'flex';
+  const tf=$('theme-fab');if(tf)tf.textContent=theme==='dark'?'Light':'Dark';
+}
+
+// ── LOGIN ──────────────────────────────────────────────────────────────
+function rLogin(){return`<div class="auth-wrap fade">
+  <div class="brand"><div class="brand-mark">∑</div><h1>Math Lab</h1><p>Parent Portal</p></div>
+  <div class="auth-card">
+    <div class="card-heading">Sign in</div>
+    <div class="card-sub">Track your child's progress</div>
+    ${S.err?err(S.err):''}${S.ok?ok(S.ok):''}
+    <div class="field"><label>Name</label><input id="ln" type="text" placeholder="As registered" autocomplete="name" autocapitalize="none" autocorrect="off" spellcheck="false"/></div>
+    <div class="field"><label>Password</label><input id="lp" type="password" placeholder="Enter your password" autocomplete="current-password" autocorrect="off" autocapitalize="off" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button class="btn btn-primary" onclick="doLogin()" style="margin-top:4px">Sign in</button>
+    <div class="auth-cta">New parent? <button class="link" onclick="nav('signup1')">Create account</button></div>
+  </div></div>`;}
+
+function doLogin(){
+  const name=$('ln').value.trim(),pw=$('lp').value.trim();
+  if(!name||!pw){S.err='Please fill in all fields.';render();return;}
+  const u=users().find(u=>u.name.toLowerCase()===name.toLowerCase()&&u.password===pw);
+  if(!u){S.err='Invalid name or password.';render();return;}
+  saveSession({id:u.id});u.status==='approved'?nav('home'):nav('pending');
+}
+
+// ── SIGNUP 1 ───────────────────────────────────────────────────────────
+function rS1(){const d=S.sd;return`<div class="auth-wrap fade">
+  <div class="brand"><div class="brand-mark">∑</div><h1>Math Lab</h1><p>Parent Portal</p></div>
+  <div class="auth-card">
+    <div class="steps"><div class="step active"></div><div class="step"></div><div class="step"></div></div>
+    <div class="card-heading">Create account</div>
+    <div class="card-sub">Step 1 of 3 — Your details</div>
+    ${S.err?err(S.err):''}
+    <div class="field"><label>Your name</label><input id="s1n" type="text" placeholder="Full name" value="${d.name||''}" autocomplete="name"/></div>
+    <div class="field"><label>Email address</label><input id="s1e" type="email" placeholder="your@email.com" value="${d.email||''}" autocomplete="email" inputmode="email"/></div>
+    <div class="field"><label>Phone number</label><input id="s1p" type="tel" placeholder="+91 9876543210" value="${d.phone||''}" autocomplete="tel" inputmode="tel"/></div>
+    <div class="field"><label>Student's name</label><input id="s1s" type="text" placeholder="Your child's name" value="${d.studentName||''}"/></div>
+    <button class="btn btn-primary" id="s1btn" onclick="doS1()" style="margin-top:4px">Send OTP</button>
+    <div class="auth-cta">Have an account? <button class="link" onclick="nav('login')">Sign in</button></div>
+  </div></div>`;}
+
+async function doS1(){
+  const name=$('s1n').value.trim(),email=$('s1e').value.trim(),phone=$('s1p').value.trim(),st=$('s1s').value.trim();
+  if(!name||!email||!phone||!st){S.err='All fields are required.';render();return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){S.err='Please enter a valid email address.';render();return;}
+  if(phone.replace(/\D/g,'').length<10){S.err='Please enter a valid phone number.';render();return;}
+  if(users().find(u=>u.name.toLowerCase()===name.toLowerCase())){S.err='This name is already registered. Please sign in.';render();return;}
+  const btn=$('s1btn');btn.textContent='Sending…';btn.disabled=true;
+  const otp=Math.floor(100000+Math.random()*900000).toString();
+  try{
+    await emailjs.send('service_1x75rs9','template_6o9nzkj',{to_name:name,to_email:email,otp});
+    nav('signup2',{sd:{name,email,phone,studentName:st},otp});
+  }catch(e){S.err=`Could not send OTP — ${e.text||e.message||'please try again'}.`;render();}
+}
+
+// ── SIGNUP 2 ───────────────────────────────────────────────────────────
+function rS2(){
+  const m=S.sd.email.replace(/(.{2})(.*)(@.*)/,(_,a,b,c)=>a+'*'.repeat(b.length)+c);
+  return`<div class="auth-wrap fade">
+  <div class="brand"><div class="brand-mark">∑</div><h1>Math Lab</h1><p>Parent Portal</p></div>
+  <div class="auth-card">
+    <div class="steps"><div class="step done"></div><div class="step active"></div><div class="step"></div></div>
+    <div class="card-heading">Verify email</div>
+    <div class="card-sub">Step 2 of 3 — Check your inbox</div>
+    ${S.err?err(S.err):''}${S.ok?ok(S.ok):''}
+    <div class="alert alert-info" style="margin-bottom:14px">OTP sent to <strong>${m}</strong>. Check your inbox and spam folder.</div>
+    <div class="field"><label>6-digit code</label>
+    <input id="s2o" class="otp-field" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="——————" maxlength="6" onkeydown="if(event.key==='Enter')doS2()"/></div>
+    <button class="btn btn-primary" onclick="doS2()">Verify</button>
+    <div class="auth-cta" style="display:flex;justify-content:center;gap:20px">
+      <button class="link" onclick="nav('signup1',{sd:S.sd})">Change details</button>
+      <button class="link" onclick="resendOtp()">Resend code</button>
+    </div>
+  </div></div>`;}
+
+function doS2(){
+  const o=$('s2o').value.trim();
+  if(o.length!==6){S.err='Please enter the 6-digit code.';render();return;}
+  if(o!==S.otp){S.err='Incorrect code. Please try again.';render();return;}
+  nav('signup3',{sd:S.sd});
+}
+async function resendOtp(){
+  const otp=Math.floor(100000+Math.random()*900000).toString();
+  try{
+    await emailjs.send('service_1x75rs9','template_6o9nzkj',{to_name:S.sd.name,to_email:S.sd.email,otp});
+    S.otp=otp;S.ok='Code resent. Check your inbox.';S.err='';render();
+  }catch(e){S.err='Failed to resend. Please try again.';render();}
+}
+
+// ── SIGNUP 3 ───────────────────────────────────────────────────────────
+function rS3(){return`<div class="auth-wrap fade">
+  <div class="brand"><div class="brand-mark">∑</div><h1>Math Lab</h1><p>Parent Portal</p></div>
+  <div class="auth-card">
+    <div class="steps"><div class="step done"></div><div class="step done"></div><div class="step active"></div></div>
+    <div class="card-heading">Set password</div>
+    <div class="card-sub">Step 3 of 3 — Almost done</div>
+    ${S.err?err(S.err):''}
+    <div class="field"><label>Password</label><input id="s3p" type="password" placeholder="At least 6 characters" autocomplete="new-password"/></div>
+    <div class="field"><label>Confirm password</label><input id="s3c" type="password" placeholder="Repeat password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doS3()"/></div>
+    <button class="btn btn-primary" id="s3btn" onclick="doS3()" style="margin-top:4px">Create account</button>
+    <div class="auth-cta"><button class="link" onclick="nav('signup1',{sd:S.sd})">Start over</button></div>
+  </div></div>`;}
+
+async function doS3(){
+  const pw=$('s3p').value,c=$('s3c').value;
+  if(!pw||!c){S.err='Please fill in both fields.';render();return;}
+  if(pw.length<6){S.err='Password must be at least 6 characters.';render();return;}
+  if(pw!==c){S.err='Passwords do not match.';render();return;}
+  const btn=$('s3btn');btn.textContent='Creating…';btn.disabled=true;
+  const user={id:Date.now().toString(),name:S.sd.name,phone:S.sd.phone,email:S.sd.email,studentName:S.sd.studentName,password:pw,status:'pending',totalClassesMonth:0,syllabusSchedule:[],syllabusTopics:[],createdAt:new Date().toISOString()};
+  const all=users();all.push(user);saveUsers(all);saveSession({id:user.id});
+  await notifyAdmin(user);nav('pending');
+}
+async function notifyAdmin(user){
+  try{await emailjs.send('service_1x75rs9','template_8imnvrh',{parent_name:user.name,student_name:user.studentName,phone:user.phone,parent_email:user.email||'—',signup_time:new Date().toLocaleString('en-IN')});}
+  catch(e){console.warn('Admin notify failed',e);}
+}
+
+// ── PENDING ────────────────────────────────────────────────────────────
+function rPending(){
+  const u=me(),rej=u&&u.status==='rejected';
+  return`<div class="pending-wrap fade">
+  <div style="text-align:center;margin-bottom:24px">
+    <div class="brand-mark" style="margin-bottom:8px">∑</div>
+    <div style="font-family:var(--ff-d);font-size:17px">Math Lab</div>
+  </div>
+  <div class="pending-icon">${rej?'✕':'…'}</div>
+  <h2>${rej?'Request Declined':'Request Submitted'}</h2>
+  ${rej?`<p>Your request was not approved. Please contact Ansh directly.</p>`
+      :`<p>Ansh will review and approve your request within 24 hours. If he does not, please text him.</p>
+        <p style="font-size:12px;color:var(--text-3);margin-top:6px">You will be able to sign in once approved.</p>`}
+  <button class="btn btn-ghost" style="max-width:180px;margin-top:28px" onclick="doLogout()">Sign out</button>
+  </div>`;}
+
+// ── HOME ───────────────────────────────────────────────────────────────
+function rHome(){
+  const u=me();if(!u){nav('login');return'';}
+  const cls=classes(u.id),n=note(u.id);
+  const done=(u.syllabusTopics||[]).filter(t=>t.status==='completed').length;
+  const total=(u.syllabusTopics||[]).length;
+  const now=new Date();
+  const ctm=cls.filter(c=>{const d=new Date(c.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).length;
+
+  return`<div class="home fade">
+  <header class="app-header">
+    <div class="header-row">
+      <div class="app-brand"><div class="app-brand-mark">∑</div><span class="app-brand-name">Math Lab</span></div>
+      <div style="position:relative">
+        <button class="hbtn" id="hbtn" onclick="toggleMenu(event)" aria-label="Menu">
+          <div class="hb-bar"></div><div class="hb-bar"></div><div class="hb-bar"></div>
+        </button>
+        <div id="menu-drop" style="display:none" class="dropdown">
+          <button class="dd-item" onclick="toggleTheme();closeMenu()">
+            <span class="dd-icon" id="theme-dd-icon">${theme==='dark'?'○':'●'}</span>
+            <span id="theme-dd-label">${theme==='dark'?'Light mode':'Dark mode'}</span>
+          </button>
+          <button class="dd-item" onclick="showInstall();closeMenu()">
+            <span class="dd-icon">↑</span><span>Add to home screen</span>
+          </button>
+          <button class="dd-item" onclick="showPwModal();closeMenu()">
+            <span class="dd-icon">⚿</span><span>Change password</span>
+          </button>
+          <button class="dd-item dd-danger" onclick="doLogout()">
+            <span class="dd-icon">←</span><span>Sign out</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="tab-bar">
+      <button class="tab ${S.tab==='overview'?'active':''}" onclick="switchTab('overview')">Overview</button>
+      <button class="tab ${S.tab==='classes'?'active':''}" onclick="switchTab('classes')">Classes</button>
+      <button class="tab ${S.tab==='syllabus'?'active':''}" onclick="switchTab('syllabus')">Syllabus</button>
+    </div>
+  </header>
+
+  <div class="pane ${S.tab==='overview'?'active':''}">
+    <div class="greeting-name">Hello, ${u.name.split(' ')[0]}</div>
+    <div class="greeting-sub">${u.studentName}'s progress dashboard</div>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="s-label">Classes this month</div>
+        <div class="s-val">${ctm}<span> / ${u.totalClassesMonth||'—'}</span></div>
+        ${u.totalClassesMonth?`<div class="pbar"><div class="pfill" style="width:${Math.min(100,ctm/u.totalClassesMonth*100)}%"></div></div>`:`<div class="s-note">Total not set</div>`}
+      </div>
+      <div class="stat">
+        <div class="s-label">Syllabus done</div>
+        <div class="s-val">${done}<span> / ${total||'—'}</span></div>
+        ${total?`<div class="pbar"><div class="pfill" style="width:${Math.min(100,done/total*100)}%"></div></div>`:`<div class="s-note">Not set yet</div>`}
+      </div>
+    </div>
+    <div class="note">
+      <div class="note-header">
+        <div><div class="note-title">Teacher's note</div>
+        <div class="note-week">${n&&n.weekOf?`Week of ${fmt(n.weekOf)}`:'This week'}</div></div>
+      </div>
+      <div class="note-body">${n&&n.note?n.note:'<em style="color:var(--text-3)">No note from Ansh yet this week.</em>'}</div>
+    </div>
+  </div>
+
+  <div class="pane ${S.tab==='classes'?'active':''}">
+    <div class="section-head"><h3>Classes</h3></div>
+    <div class="section-sub">All sessions for ${u.studentName}</div>
+    ${cls.length===0?`<div class="empty"><div class="e-icon">—</div><p>No classes logged yet.<br>Sessions will appear here after Ansh logs them.</p></div>`
+    :cls.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(c=>`
+      <div class="class-card">
+        <div class="cc-meta">${fmt(c.date)}</div>
+        <div class="cc-topic">${c.topic}</div>
+        ${c.homework?`<div class="cc-hw">${c.homework}</div>`:''}
+        <div class="cc-foot"><span>Homework</span>
+          <span class="badge ${c.hwDone?'badge-green':'badge-amber'}">${c.hwDone?'Done':'Pending'}</span>
+        </div>
+      </div>`).join('')}
+  </div>
+
+  <div class="pane ${S.tab==='syllabus'?'active':''}">
+    <div class="section-head"><h3>Syllabus plan</h3></div>
+    <div class="section-sub">${u.studentName}'s learning roadmap</div>
+    ${(u.syllabusSchedule&&u.syllabusSchedule.length)?`
+    <div class="table-wrap" style="margin-bottom:24px"><table>
+      <thead><tr><th>Month</th><th>Week</th><th>Topic</th><th>Type</th></tr></thead>
+      <tbody>${u.syllabusSchedule.map(s=>`<tr>
+        <td style="white-space:nowrap">${s.month}</td>
+        <td style="white-space:nowrap">Wk ${s.week}</td>
+        <td>${s.topic}</td>
+        <td><span class="badge badge-amber">${s.type}</span></td>
+      </tr>`).join('')}</tbody>
+    </table></div>`:`<div class="empty" style="padding:24px 0"><div class="e-icon">—</div><p>Syllabus plan not set yet.</p></div>`}
+    <div class="section-head"><h3>Topics</h3></div>
+    <div class="legend" style="margin-top:8px">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--primary)"></div>Completed</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--warn)"></div>Ongoing</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--text-3)"></div>Not started</div>
+    </div>
+    ${(u.syllabusTopics&&u.syllabusTopics.length)?`
+    <div class="table-wrap"><table>
+      <thead><tr><th>Topic</th><th>Status</th></tr></thead>
+      <tbody>${u.syllabusTopics.map(t=>`<tr>
+        <td>${t.name}</td>
+        <td><span class="badge ${t.status==='completed'?'badge-green':t.status==='ongoing'?'badge-amber':'badge-neutral'}">
+          ${t.status==='completed'?'Completed':t.status==='ongoing'?'Ongoing':'Not started'}
+        </span></td>
+      </tr>`).join('')}</tbody>
+    </table></div>`:`<div class="empty" style="padding:24px 0"><div class="e-icon">—</div><p>Topics not set yet.</p></div>`}
+  </div>
+
+  <!-- Change password sheet -->
+  <div id="pw-overlay" class="overlay" style="display:none" onclick="if(event.target===this)closePwModal()">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h3>Change password</h3>
+      <div class="field"><label>Current password</label><input id="cp-c" type="password" placeholder="Current password"/></div>
+      <div class="field"><label>New password</label><input id="cp-n" type="password" placeholder="Minimum 6 characters"/></div>
+      <div class="field"><label>Confirm new password</label><input id="cp-k" type="password" placeholder="Repeat new password"/></div>
+      <div class="sheet-actions">
+        <button class="btn btn-ghost" onclick="closePwModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="doChangePw()">Update</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Install sheet -->
+  <div id="install-overlay" class="overlay" style="display:none" onclick="if(event.target===this)closeInstall()">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h3>Add to home screen</h3>
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:14px">Open Math Lab as an app — no download needed.</p>
+      <div class="device-tabs">
+        <button class="dtab ${S.itab==='ios'?'active':''}" onclick="setItab('ios')">iPhone</button>
+        <button class="dtab ${S.itab==='android'?'active':''}" onclick="setItab('android')">Android</button>
+      </div>
+      <div id="install-body">${installBody()}</div>
+      <button class="btn btn-primary" style="margin-top:18px" onclick="closeInstall()">Got it</button>
+    </div>
+  </div>
+  </div>`;}
+
+// ── INSTALL ────────────────────────────────────────────────────────────
+function installBody(){
+  if(S.itab==='ios') return`
+    <div class="install-step"><div class="step-num">1</div><div class="step-text">Open this page in <strong>Safari</strong> (not Chrome)</div></div>
+    <div class="install-step"><div class="step-num">2</div><div class="step-text">Tap the <strong>Share button</strong> at the bottom of the screen</div></div>
+    <div class="install-step"><div class="step-num">3</div><div class="step-text">Scroll down and tap <strong>"Add to Home Screen"</strong></div></div>
+    <div class="install-step"><div class="step-num">4</div><div class="step-text">Tap <strong>"Add"</strong> in the top right corner</div></div>
+    <div class="install-step"><div class="step-num">5</div><div class="step-text">Math Lab will appear on your home screen</div></div>
+    <div class="install-note">Safari only. This does not work in Chrome on iPhone.</div>`;
+  return`
+    <div class="install-step"><div class="step-num">1</div><div class="step-text">Open this page in <strong>Chrome</strong></div></div>
+    <div class="install-step"><div class="step-num">2</div><div class="step-text">Tap the <strong>three-dot menu</strong> at the top right</div></div>
+    <div class="install-step"><div class="step-num">3</div><div class="step-text">Tap <strong>"Add to Home Screen"</strong></div></div>
+    <div class="install-step"><div class="step-num">4</div><div class="step-text">Tap <strong>"Add"</strong> to confirm</div></div>
+    <div class="install-step"><div class="step-num">5</div><div class="step-text">Math Lab will appear on your home screen</div></div>
+    <div class="install-note">Chrome may also show an install prompt at the bottom automatically.</div>`;
+}
+function showInstall(){
+  if(S.screen==='home'){$('install-overlay').style.display='flex';}
+  else{
+    const old=$('install-overlay');if(old)old.remove();
+    const d=document.createElement('div');
+    d.innerHTML=`<div id="install-overlay" class="overlay" onclick="if(event.target===this)closeInstall()">
+      <div class="sheet"><div class="sheet-handle"></div>
+        <h3>Add to home screen</h3>
+        <p style="font-size:13px;color:var(--text-2);margin-bottom:14px">Open Math Lab as an app — no download needed.</p>
+        <div class="device-tabs">
+          <button class="dtab active" id="dtab-ios" onclick="setItab('ios')">iPhone</button>
+          <button class="dtab" id="dtab-android" onclick="setItab('android')">Android</button>
+        </div>
+        <div id="install-body">${installBody()}</div>
+        <button class="btn btn-primary" style="margin-top:18px" onclick="closeInstall()">Got it</button>
+      </div></div>`;
+    document.body.appendChild(d.firstElementChild);
+  }
+}
+function closeInstall(){const m=$('install-overlay');if(m){if(S.screen==='home')m.style.display='none';else m.remove();}}
+function setItab(t){
+  S.itab=t;
+  const b=$('install-body');if(b)b.innerHTML=installBody();
+  document.querySelectorAll('.dtab').forEach(el=>el.classList.toggle('active',el.id==='dtab-'+t||(!el.id&&t==='ios')));
+}
+
+// ── MENU ───────────────────────────────────────────────────────────────
 function toggleMenu(e){
   e.stopPropagation();
   const d=$('menu-drop');if(!d)return;
@@ -246,326 +596,18 @@ function toggleMenu(e){
   if(!open)setTimeout(()=>document.addEventListener('click',closeMenu,{once:true}),0);
 }
 function closeMenu(){const d=$('menu-drop');if(d)d.style.display='none';}
-
-// NAV
-function nav(screen,extra={}){
-  S.screen=screen;S.error='';S.info='';
-  Object.assign(S,extra);render();window.scrollTo(0,0);
-}
-
-window.addEventListener('DOMContentLoaded',()=>{
-  const u=getCU();
-  if(u){u.status==='approved'?nav('home'):nav('pending');}
-  else nav('login');
-});
-
-// RENDER
-function render(){
-  const map={login:rLogin,signup1:rS1,signup2:rS2,signup3:rS3,pending:rPending,home:rHome};
-  $('app').innerHTML=(map[S.screen]||rLogin)();
-  const fab=$('fab-row');
-  if(fab)fab.style.display=S.screen==='home'?'none':'flex';
-  document.querySelectorAll('.th-ico,#th-icon').forEach(e=>e.textContent=theme==='dark'?'☀️':'🌙');
-}
-
-// LOGIN
-function rLogin(){return`<div class="auth-screen fade-in">
-  <div class="auth-logo"><div class="logo-icon">∑</div><h1>Math Lab</h1><p>Parent Portal</p></div>
-  <div class="auth-card">
-    <h2>Welcome back</h2><p class="subtitle">Track your child's progress</p>
-    ${S.error?`<div class="err">${S.error}</div>`:''}${S.info?`<div class="succ">${S.info}</div>`:''}
-    <div class="fg"><label>Your Name</label><input id="ln" type="text" placeholder="As registered" autocomplete="name"/></div>
-    <div class="fg"><label>Password</label><input id="lp" type="password" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
-    <button class="btn btn-p" onclick="doLogin()">Sign In</button>
-    <div class="auth-footer">New parent? <button class="lnk" onclick="nav('signup1')">Create account</button></div>
-  </div></div>`;}
-function doLogin(){
-  const name=$('ln').value.trim(),pw=$('lp').value;
-  if(!name||!pw){S.error='Please fill in all fields.';render();return;}
-  const u=getUsers().find(u=>u.name.toLowerCase()===name.toLowerCase()&&u.password===pw);
-  if(!u){S.error='Invalid name or password.';render();return;}
-  saveSession({id:u.id});u.status==='approved'?nav('home'):nav('pending');
-}
-
-// SIGNUP 1
-function rS1(){const d=S.signupData;return`<div class="auth-screen fade-in">
-  <div class="auth-logo"><div class="logo-icon">∑</div><h1>Math Lab</h1><p>Parent Portal</p></div>
-  <div class="auth-card">
-    <div class="steps"><div class="step active"></div><div class="step"></div><div class="step"></div></div>
-    <h2>Create account</h2><p class="subtitle">Step 1 of 3 — Your details</p>
-    ${S.error?`<div class="err">${S.error}</div>`:''}
-    <div class="fg"><label>Parent Name *</label><input id="s1n" type="text" placeholder="Your full name" value="${d.name||''}" autocomplete="name"/></div>
-    <div class="fg"><label>Email Address *</label><input id="s1em" type="email" placeholder="your@email.com" value="${d.email||''}" autocomplete="email" inputmode="email"/></div>
-    <div class="fg"><label>Phone Number *</label><input id="s1ph" type="tel" placeholder="+91 9876543210" value="${d.phone||''}" autocomplete="tel" inputmode="tel"/></div>
-    <div class="fg"><label>Student's Name *</label><input id="s1st" type="text" placeholder="Your child's name" value="${d.studentName||''}"/></div>
-    <button class="btn btn-p" id="s1btn" onclick="doS1()" style="margin-top:4px">Send OTP to Email →</button>
-    <div class="auth-footer">Already registered? <button class="lnk" onclick="nav('login')">Sign in</button></div>
-  </div></div>`;}
-async function doS1(){
-  const name=$('s1n').value.trim(),email=$('s1em').value.trim(),phone=$('s1ph').value.trim(),st=$('s1st').value.trim();
-  if(!name||!email||!phone||!st){S.error='All fields are required.';render();return;}
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){S.error='Please enter a valid email address.';render();return;}
-  if(phone.replace(/\D/g,'').length<10){S.error='Please enter a valid phone number.';render();return;}
-  if(getUsers().find(u=>u.name.toLowerCase()===name.toLowerCase())){S.error='This name is already registered. Please sign in.';render();return;}
-  const btn=$('s1btn');btn.textContent='Sending OTP…';btn.disabled=true;
-  const otp=Math.floor(100000+Math.random()*900000).toString();
-  try{
-    await emailjs.send('service_1x75rs9','template_6o9nzkj',{to_name:name,to_email:email,otp});
-    nav('signup2',{signupData:{name,email,phone,studentName:st},mockOtp:otp});
-  }catch(e){S.error=`OTP failed (${e.text||e.message||JSON.stringify(e)}).`;render();}
-}
-
-// SIGNUP 2
-function rS2(){
-  const m=S.signupData.email.replace(/(.{2})(.*)(@.*)/,(_,a,b,c)=>a+'*'.repeat(b.length)+c);
-  return`<div class="auth-screen fade-in">
-  <div class="auth-logo"><div class="logo-icon">∑</div><h1>Math Lab</h1><p>Parent Portal</p></div>
-  <div class="auth-card">
-    <div class="steps"><div class="step done"></div><div class="step active"></div><div class="step"></div></div>
-    <h2>Verify email</h2><p class="subtitle">Step 2 of 3 — Check your inbox</p>
-    ${S.error?`<div class="err">${S.error}</div>`:''}${S.info?`<div class="succ">${S.info}</div>`:''}
-    <div class="otp-notice">📧 OTP sent to <strong>${m}</strong><br><small>Check inbox &amp; spam folder</small></div>
-    <div class="fg"><label>Enter 6-digit OTP</label>
-    <input id="s2otp" class="otp-in" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="______" maxlength="6" onkeydown="if(event.key==='Enter')doS2()"/></div>
-    <button class="btn btn-p" onclick="doS2()">Verify →</button>
-    <div class="auth-footer" style="display:flex;justify-content:center;gap:18px">
-      <button class="lnk" onclick="nav('signup1',{signupData:S.signupData})">← Change details</button>
-      <button class="lnk" onclick="resendOtp()">Resend OTP</button>
-    </div>
-  </div></div>`;}
-function doS2(){
-  const otp=$('s2otp').value.trim();
-  if(otp.length!==6){S.error='Please enter the 6-digit OTP.';render();return;}
-  if(otp!==S.mockOtp){S.error='Incorrect OTP. Please try again.';render();return;}
-  nav('signup3',{signupData:S.signupData});
-}
-async function resendOtp(){
-  const otp=Math.floor(100000+Math.random()*900000).toString();
-  try{
-    await emailjs.send('service_1x75rs9','template_6o9nzkj',{to_name:S.signupData.name,to_email:S.signupData.email,otp});
-    S.mockOtp=otp;S.info='OTP resent!';S.error='';render();
-  }catch(e){S.error='Failed to resend. Try again.';render();}
-}
-
-// SIGNUP 3
-function rS3(){return`<div class="auth-screen fade-in">
-  <div class="auth-logo"><div class="logo-icon">∑</div><h1>Math Lab</h1><p>Parent Portal</p></div>
-  <div class="auth-card">
-    <div class="steps"><div class="step done"></div><div class="step done"></div><div class="step active"></div></div>
-    <h2>Set password</h2><p class="subtitle">Step 3 of 3 — Almost there!</p>
-    ${S.error?`<div class="err">${S.error}</div>`:''}
-    <div class="fg"><label>Password</label><input id="s3p" type="password" placeholder="At least 6 characters" autocomplete="new-password"/></div>
-    <div class="fg"><label>Confirm Password</label><input id="s3c" type="password" placeholder="Repeat password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doS3()"/></div>
-    <button class="btn btn-p" id="s3btn" onclick="doS3()">Complete Sign Up ✓</button>
-    <div class="auth-footer"><button class="lnk" onclick="nav('signup1',{signupData:S.signupData})">← Start over</button></div>
-  </div></div>`;}
-async function doS3(){
-  const pw=$('s3p').value,conf=$('s3c').value;
-  if(!pw||!conf){S.error='Please fill in both fields.';render();return;}
-  if(pw.length<6){S.error='Password must be at least 6 characters.';render();return;}
-  if(pw!==conf){S.error='Passwords do not match.';render();return;}
-  const btn=$('s3btn');btn.textContent='Creating account…';btn.disabled=true;
-  const user={id:Date.now().toString(),name:S.signupData.name,phone:S.signupData.phone,email:S.signupData.email,
-    studentName:S.signupData.studentName,password:pw,status:'pending',totalClassesMonth:0,
-    syllabusSchedule:[],syllabusTopics:[],createdAt:new Date().toISOString()};
-  const users=getUsers();users.push(user);saveUsers(users);saveSession({id:user.id});
-  await sendAdminNotif(user);nav('pending');
-}
-async function sendAdminNotif(user){
-  try{await emailjs.send('service_1x75rs9','template_8imnvrh',{parent_name:user.name,student_name:user.studentName,phone:user.phone,parent_email:user.email||'—',signup_time:new Date().toLocaleString('en-IN')});}
-  catch(e){console.warn('Admin notif failed:',e);}
-}
-
-// PENDING
-function rPending(){
-  const u=getCU(),rej=u&&u.status==='rejected';
-  return`<div class="pending-screen fade-in">
-  <div style="text-align:center;margin-bottom:22px"><div class="logo-icon" style="margin-bottom:8px">∑</div><div style="font-family:var(--ff-d);font-size:19px">Math Lab</div></div>
-  <div class="pending-icon">${rej?'❌':'⏳'}</div>
-  <h2>${rej?'Request Declined':'Request Submitted!'}</h2>
-  ${rej?`<p>Your request was not approved. Please contact Ansh directly.</p>`
-      :`<p>Ansh will validate and approve your request within 24 hours. If he does not do so, please text him.</p>
-        <p style="font-size:13px;color:var(--text-3);margin-top:6px">You'll be able to sign in once approved.</p>`}
-  <button class="btn btn-gh" style="max-width:200px;margin-top:28px" onclick="doLogout()">Sign Out</button>
-  </div>`;}
-
-// HOME
-function rHome(){
-  const u=getCU();if(!u){nav('login');return'';}
-  const cls=getClasses(u.id),note=getNote(u.id);
-  const done=(u.syllabusTopics||[]).filter(t=>t.status==='completed').length;
-  const total=(u.syllabusTopics||[]).length;
-  const now=new Date();
-  const ctm=cls.filter(c=>{const d=new Date(c.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).length;
-
-  return`<div class="home fade-in">
-  <div class="home-header">
-    <div class="header-top">
-      <div class="logo-sm"><div class="logo-icon-sm">∑</div><span>Math Lab</span></div>
-      <div style="position:relative">
-        <button class="hamburger" onclick="toggleMenu(event)" id="hbtn" aria-label="Menu">
-          <div class="hb-line"></div><div class="hb-line"></div><div class="hb-line"></div>
-        </button>
-        <div id="menu-drop" style="display:none" class="menu-drop">
-          <button class="menu-item" onclick="toggleTheme();closeMenu()">
-            <span class="mi-icon th-ico">${theme==='dark'?'☀️':'🌙'}</span>
-            <span id="theme-lbl">${theme==='dark'?'Light Mode':'Dark Mode'}</span>
-          </button>
-          <button class="menu-item" onclick="showInstall();closeMenu()">
-            <span class="mi-icon">📲</span><span>Add to Home Screen</span>
-          </button>
-          <button class="menu-item" onclick="showPwModal();closeMenu()">
-            <span class="mi-icon">🔑</span><span>Change Password</span>
-          </button>
-          <button class="menu-item danger" onclick="doLogout()">
-            <span class="mi-icon">🚪</span><span>Sign Out</span>
-          </button>
-        </div>
-      </div>
-    </div>
-    <div class="tabs">
-      <div class="tab ${S.tab==='overview'?'active':''}" onclick="switchTab('overview')">Overview</div>
-      <div class="tab ${S.tab==='classes'?'active':''}" onclick="switchTab('classes')">Classes</div>
-      <div class="tab ${S.tab==='syllabus'?'active':''}" onclick="switchTab('syllabus')">Syllabus</div>
-    </div>
-  </div>
-
-  <!-- OVERVIEW -->
-  <div class="tab-c ${S.tab==='overview'?'active':''}" id="t-ov">
-    <p class="greeting">Hi, ${u.name.split(' ')[0]}! 👋</p>
-    <p class="greeting-sub">${u.studentName}'s dashboard</p>
-    <div class="stat-grid">
-      <div class="stat-card">
-        <div class="stat-lbl">Classes this month</div>
-        <div class="stat-val">${ctm}<span>/${u.totalClassesMonth||'—'}</span></div>
-        ${u.totalClassesMonth?`<div class="pbar"><div class="pfill" style="width:${Math.min(100,ctm/u.totalClassesMonth*100)}%"></div></div>`:`<div class="stat-sub">Total not set yet</div>`}
-      </div>
-      <div class="stat-card">
-        <div class="stat-lbl">Syllabus done</div>
-        <div class="stat-val">${done}<span>/${total||'—'}</span></div>
-        ${total?`<div class="pbar"><div class="pfill" style="width:${Math.min(100,done/total*100)}%"></div></div>`:`<div class="stat-sub">Not set yet</div>`}
-      </div>
-    </div>
-    <div class="note-card">
-      <div class="note-hd"><div class="note-ico">📝</div>
-        <div><div class="note-title">Teacher's Note</div>
-        <div class="note-week">${note&&note.weekOf?`Week of ${fmt(note.weekOf)}`:'This week'}</div></div>
-      </div>
-      <p class="note-text">${note&&note.note?note.note:'<em style="color:var(--text-3)">No note from Ansh yet this week.</em>'}</p>
-    </div>
-  </div>
-
-  <!-- CLASSES -->
-  <div class="tab-c ${S.tab==='classes'?'active':''}" id="t-cls">
-    <p class="sec-title">Classes</p>
-    <p class="sec-sub">All sessions for ${u.studentName}</p>
-    ${cls.length===0?`<div class="empty"><div class="ei">📚</div><p>No classes logged yet. Sessions will appear here after Ansh logs them.</p></div>`
-    :cls.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(c=>`
-      <div class="class-card">
-        <div class="cc-date">${fmt(c.date)}</div>
-        <div class="cc-topic">${c.topic}</div>
-        ${c.homework?`<div class="cc-hw">📋 ${c.homework}</div>`:'<div style="height:4px"></div>'}
-        <div class="cc-foot"><span style="font-size:12px;color:var(--text-3)">Homework</span>
-          <span class="badge ${c.hwDone?'bdg-g':'bdg-y'}">${c.hwDone?'✓ Done':'⏳ Pending'}</span>
-        </div>
-      </div>`).join('')}
-  </div>
-
-  <!-- SYLLABUS -->
-  <div class="tab-c ${S.tab==='syllabus'?'active':''}" id="t-syl">
-    <p class="sec-title">Syllabus Plan</p>
-    <p class="sec-sub">${u.studentName}'s learning roadmap</p>
-    ${(u.syllabusSchedule&&u.syllabusSchedule.length>0)?`
-    <div class="tbl-wrap" style="margin-bottom:20px"><table>
-      <thead><tr><th>Month</th><th>Week</th><th>Topic</th><th>Type</th></tr></thead>
-      <tbody>${u.syllabusSchedule.map(s=>`<tr>
-        <td style="white-space:nowrap">${s.month}</td><td style="white-space:nowrap">Wk ${s.week}</td>
-        <td>${s.topic}</td><td><span class="badge bdg-y">${s.type}</span></td>
-      </tr>`).join('')}</tbody>
-    </table></div>`:`<div class="empty" style="padding:24px 0"><div class="ei">🗓</div><p>Syllabus plan not set yet.</p></div>`}
-    <p class="sec-title">Topics Progress</p>
-    <div class="legend">
-      <div class="lg-item"><div class="ld" style="background:var(--primary)"></div>Completed</div>
-      <div class="lg-item"><div class="ld" style="background:var(--accent)"></div>Ongoing</div>
-      <div class="lg-item"><div class="ld" style="background:var(--text-3)"></div>Not Started</div>
-    </div>
-    ${(u.syllabusTopics&&u.syllabusTopics.length>0)?`
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>Topic</th><th>Status</th></tr></thead>
-      <tbody>${u.syllabusTopics.map(t=>`<tr>
-        <td>${t.name}</td>
-        <td><span class="badge ${t.status==='completed'?'bdg-g':t.status==='ongoing'?'bdg-y':'bdg-gr'}">
-          ${t.status==='completed'?'✓ Done':t.status==='ongoing'?'● Ongoing':'○ Not Yet'}
-        </span></td>
-      </tr>`).join('')}</tbody>
-    </table></div>`:`<div class="empty" style="padding:24px 0"><div class="ei">📋</div><p>Topics not set yet.</p></div>`}
-  </div>
-
-  <!-- CHANGE PASSWORD MODAL -->
-  <div id="pw-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closePwModal()">
-    <div class="modal">
-      <div class="drag-bar"></div>
-      <h3>Change Password</h3>
-      <div class="fg"><label>Current Password</label><input id="cp-cur" type="password" placeholder="Current password"/></div>
-      <div class="fg"><label>New Password</label><input id="cp-new" type="password" placeholder="New password (min 6 chars)"/></div>
-      <div class="fg"><label>Confirm New</label><input id="cp-conf" type="password" placeholder="Confirm new password"/></div>
-      <div class="modal-actions">
-        <button class="btn btn-gh" onclick="closePwModal()">Cancel</button>
-        <button class="btn btn-p" onclick="doChangePw()">Update</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- INSTALL MODAL -->
-  <div id="install-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeInstall()">
-    <div class="modal">
-      <div class="drag-bar"></div>
-      <h3>📲 Add to Home Screen</h3>
-      <p style="font-size:13px;color:var(--text-2);margin-bottom:14px">Open Math Lab like a real app on your phone — no App Store needed!</p>
-      <div class="inst-tabs">
-        <div class="inst-tab ${S.iTab==='ios'?'active':''}" onclick="setITab('ios')">🍎 iPhone</div>
-        <div class="inst-tab ${S.iTab==='android'?'active':''}" onclick="setITab('android')">🤖 Android</div>
-      </div>
-      <div id="inst-body">${instBody()}</div>
-      <button class="btn btn-p" style="margin-top:18px" onclick="closeInstall()">Got it ✓</button>
-    </div>
-  </div>
-  </div>`;}
-
-function instBody(){
-  if(S.iTab==='ios') return`
-    <div class="inst-step"><div class="inst-num">1</div><div class="inst-text">Open this page in <em>Safari</em> — not Chrome or other browsers</div></div>
-    <div class="inst-step"><div class="inst-num">2</div><div class="inst-text">Tap the <em>Share button ⎙</em> at the bottom of the screen</div></div>
-    <div class="inst-step"><div class="inst-num">3</div><div class="inst-text">Scroll the menu and tap <em>"Add to Home Screen"</em></div></div>
-    <div class="inst-step"><div class="inst-num">4</div><div class="inst-text">Tap <em>"Add"</em> in the top right corner</div></div>
-    <div class="inst-step"><div class="inst-num">5</div><div class="inst-text"><em>Math Lab</em> will now appear on your home screen like an app 🎉</div></div>
-    <div class="inst-note">⚠️ Must use <strong>Safari</strong> on iPhone. Chrome does not support this on iOS.</div>`;
-  return`
-    <div class="inst-step"><div class="inst-num">1</div><div class="inst-text">Open this page in <em>Chrome</em></div></div>
-    <div class="inst-step"><div class="inst-num">2</div><div class="inst-text">Tap the <em>3-dot menu ⋮</em> at the top right corner</div></div>
-    <div class="inst-step"><div class="inst-num">3</div><div class="inst-text">Tap <em>"Add to Home Screen"</em></div></div>
-    <div class="inst-step"><div class="inst-num">4</div><div class="inst-text">Tap <em>"Add"</em> to confirm</div></div>
-    <div class="inst-step"><div class="inst-num">5</div><div class="inst-text"><em>Math Lab</em> will appear on your home screen 🎉</div></div>
-    <div class="inst-note">💡 Chrome may also show an <strong>"Install App"</strong> banner at the bottom automatically.</div>`;}
-
-function showInstall(){$('install-modal').style.display='flex';}
-function closeInstall(){$('install-modal').style.display='none';}
-function setITab(t){S.iTab=t;const b=$('inst-body');if(b)b.innerHTML=instBody();
-  document.querySelectorAll('.inst-tab').forEach((el,i)=>{el.classList.toggle('active',i===(t==='ios'?0:1));});}
-
-function showPwModal(){$('pw-modal').style.display='flex';}
-function closePwModal(){$('pw-modal').style.display='none';}
+function showPwModal(){$('pw-overlay').style.display='flex';}
+function closePwModal(){$('pw-overlay').style.display='none';}
 function doChangePw(){
-  const cur=$('cp-cur').value,nw=$('cp-new').value,conf=$('cp-conf').value;
-  const u=getCU(),modal=$('pw-modal').querySelector('.modal');
-  modal.querySelectorAll('.err,.succ').forEach(e=>e.remove());
-  if(u.password!==cur){modal.insertAdjacentHTML('afterbegin','<div class="err">Current password is incorrect.</div>');return;}
-  if(nw.length<6){modal.insertAdjacentHTML('afterbegin','<div class="err">Password must be at least 6 characters.</div>');return;}
-  if(nw!==conf){modal.insertAdjacentHTML('afterbegin','<div class="err">Passwords do not match.</div>');return;}
-  const users=getUsers(),idx=users.findIndex(x=>x.id===u.id);
-  users[idx].password=nw;saveUsers(users);
-  modal.insertAdjacentHTML('afterbegin','<div class="succ">✓ Password updated!</div>');
-  setTimeout(closePwModal,1800);
+  const c=$('cp-c').value,n=$('cp-n').value,k=$('cp-k').value;
+  const u=me(),m=$('pw-overlay').querySelector('.sheet');
+  m.querySelectorAll('.alert').forEach(e=>e.remove());
+  if(u.password!==c){m.insertAdjacentHTML('afterbegin',`<div class="alert alert-err">Current password is incorrect.</div>`);return;}
+  if(n.length<6){m.insertAdjacentHTML('afterbegin',`<div class="alert alert-err">Password must be at least 6 characters.</div>`);return;}
+  if(n!==k){m.insertAdjacentHTML('afterbegin',`<div class="alert alert-err">Passwords do not match.</div>`);return;}
+  const all=users(),i=all.findIndex(x=>x.id===u.id);all[i].password=n;saveUsers(all);
+  m.insertAdjacentHTML('afterbegin',`<div class="alert alert-ok">Password updated successfully.</div>`);
+  setTimeout(closePwModal,1600);
 }
 
 function switchTab(t){S.tab=t;render();window.scrollTo(0,0);}
