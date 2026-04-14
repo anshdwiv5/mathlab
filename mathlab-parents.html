@@ -47,7 +47,7 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:1
 .caption{font-size:12px;color:var(--text-2)}
 
 /* ── AUTH LAYOUT ── */
-.auth-wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(var(--sat)+56px) 20px calc(var(--sab)+32px)}
+.auth-wrap{min-height:100dvh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(var(--sat)+56px) 20px calc(var(--sab)+32px)}
 .brand{text-align:center;margin-bottom:28px}
 .brand-mark{width:52px;height:52px;background:var(--primary);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:24px;color:#fff;margin-bottom:12px}
 .brand h1{font-family:var(--ff-d);font-size:26px;margin-bottom:2px}
@@ -90,13 +90,13 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:1
 .alert-info{background:var(--warn-lt);color:var(--warn);border:1px solid rgba(146,64,14,.2)}
 
 /* ── PENDING ── */
-.pending-wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px calc(var(--sab)+24px);text-align:center}
+.pending-wrap{min-height:100dvh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px calc(var(--sab)+24px);text-align:center}
 .pending-icon{width:72px;height:72px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px}
 .pending-wrap h2{font-family:var(--ff-d);font-size:22px;margin-bottom:10px}
 .pending-wrap p{font-size:14px;color:var(--text-2);max-width:300px;line-height:1.65;margin-bottom:6px}
 
 /* ── HOME ── */
-.home{min-height:100dvh;padding-bottom:calc(var(--sab)+24px)}
+.home{min-height:100dvh;min-height:100svh;padding-bottom:calc(var(--sab)+24px)}
 
 /* Header */
 .app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:calc(var(--sat)+14px) 16px 0;position:sticky;top:0;z-index:20}
@@ -278,7 +278,8 @@ function rLogin(){return`<div class="auth-wrap fade">
   <div class="auth-card">
     <div class="card-heading">Sign in</div>
     <div class="card-sub">Track your child's progress</div>
-    ${S.err?err(S.err):''}${S.ok?ok(S.ok):''}
+    ${S.err?`<div class="alert alert-err">${S.err}${S.err.includes('Invalid')?`<div style="margin-top:6px;font-size:12px;opacity:.8">Make sure you're using the same browser and device you signed up with. Account data is stored on your device.</div>`:''}</div>`:''}
+    ${S.ok?ok(S.ok):''}
     <div class="field"><label>Name</label><input id="ln" type="text" placeholder="As registered" autocomplete="name" autocapitalize="none" autocorrect="off" spellcheck="false"/></div>
     <div class="field"><label>Password</label><input id="lp" type="password" placeholder="Enter your password" autocomplete="current-password" autocorrect="off" autocapitalize="off" onkeydown="if(event.key==='Enter')doLogin()"/></div>
     <button class="btn btn-primary" onclick="doLogin()" style="margin-top:4px">Sign in</button>
