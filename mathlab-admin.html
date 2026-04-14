@@ -30,7 +30,8 @@
 }
 html{-webkit-text-size-adjust:100%;overflow-x:hidden}
 body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:100dvh;-webkit-tap-highlight-color:transparent}
-#app{display:flex;min-height:100dvh}
+#app{display:contents}
+.app-shell{display:flex;min-height:100dvh}
 
 /* ── SIDEBAR ── */
 .sidebar{width:200px;min-height:100dvh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:30}
@@ -64,7 +65,7 @@ body{font-family:var(--ff-b);background:var(--bg);color:var(--text);min-height:1
 @media(max-width:640px){.main{margin-left:50px;padding:20px 14px}}
 
 /* ── LOGIN ── */
-.login-wrap{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px}
+.login-wrap{width:100%;min-height:100dvh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
 .login-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px 28px;width:100%;max-width:360px;box-shadow:var(--shadow-md)}
 .login-brand{text-align:center;margin-bottom:24px}
 .login-mark{width:48px;height:48px;background:var(--primary);border-radius:13px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:22px;color:#fff;margin-bottom:10px}
@@ -260,7 +261,7 @@ function doLogin(){
 // ── SHELL ──────────────────────────────────────────────────────────────
 function rShell(){
   const pending=getUsers().filter(u=>u.status==='pending');
-  return`<div style="display:flex;min-height:100dvh" class="fade">
+  return`<div class="app-shell fade">
   <div class="sidebar">
     <div class="sb-top">
       <div class="sb-brand">
